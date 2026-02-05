@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment files (passwords, API keys, etc.)
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Editor/OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
