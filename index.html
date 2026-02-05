@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Test App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+            background-color: white;
+        }
+        h1 {
+            color: blue;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        #counter {
+            font-size: 48px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello! This is Version 1</h1>
+    <div id="counter">0</div>
+    <button onclick="increment()">Click Me!</button>
+
+    <script>
+        let count = 0;
+        function increment() {
+            count++;
+            document.getElementById('counter').textContent = count;
+        }
+    </script>
+</body>
+</html>
