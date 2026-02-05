@@ -24,37 +24,17 @@
     </style>
 </head>
 <body>
-    <h1>Hello! This is Version 3</h1>
+    <h1>Hello! This is Version 2</h1>
     <div id="counter">0</div>
     <button onclick="increment()">Click Me!</button>
-    <button id="resetBtn" onclick="reset()">Reset</button>
+    <button onclick="reset()">Reset</button>
 
     <script>
         let count = 0;
-        let lastColor = '';
-
-        const colors = ['red', 'blue', 'green', 'orange', 'purple', 'pink', 'teal', 'coral', 'gold', 'crimson'];
-
         function increment() {
             count++;
             document.getElementById('counter').textContent = count;
-
-            if (count % 5 === 0) {
-                changeButtonColor();
-            }
         }
-
-        function changeButtonColor() {
-            let newColor;
-            do {
-                newColor = colors[Math.floor(Math.random() * colors.length)];
-            } while (newColor === lastColor);
-
-            document.getElementById('resetBtn').style.backgroundColor = newColor;
-            document.getElementById('resetBtn').style.color = 'white';
-            lastColor = newColor;
-        }
-
         function reset() {
             count = 0;
             document.getElementById('counter').textContent = count;
