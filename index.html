@@ -24,14 +24,19 @@
     </style>
 </head>
 <body>
-    <h1>Hello! This is Version 1</h1>
+    <h1>Hello! This is Version 2</h1>
     <div id="counter">0</div>
     <button onclick="increment()">Click Me!</button>
+    <button onclick="reset()">Reset</button>
 
     <script>
         let count = 0;
         function increment() {
             count++;
+            document.getElementById('counter').textContent = count;
+        }
+        function reset() {
+            count = 0;
             document.getElementById('counter').textContent = count;
         }
     </script>
