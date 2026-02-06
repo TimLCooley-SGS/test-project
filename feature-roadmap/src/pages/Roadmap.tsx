@@ -5,10 +5,12 @@ import RoadmapMonth from '../components/RoadmapMonth';
 import './Roadmap.css';
 
 type MonthStatus = 'past' | 'current' | 'future';
+type ViewMode = 'current' | 'past';
 
 function Roadmap(): React.ReactElement {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('current');
 
   useEffect(() => {
     setSuggestions(getSuggestions());
@@ -76,7 +78,7 @@ function Roadmap(): React.ReactElement {
     return acc;
   }, {});
 
-  // Separate and sort months: future (asc), current, past (desc - most recent first)
+  // Separate and sort months
   const allMonths = Object.keys(groupedByMonth);
 
   const futureMonths = allMonths
@@ -87,10 +89,13 @@ function Roadmap(): React.ReactElement {
 
   const pastMonths = allMonths
     .filter(m => categorizeMonth(m) === 'past')
-    .sort((a, b) => parseMonth(b).getTime() - parseMonth(a).getTime()); // Reverse: most recent first
+    .sort((a, b) => parseMonth(b).getTime() - parseMonth(a).getTime()); // Most recent first
 
-  // Combine in display order: future, current, past
-  const sortedMonths = [...futureMonths, ...currentMonths, ...pastMonths];
+  // Current view: current month first, then future months
+  const currentViewMonths = [...currentMonths, ...futureMonths];
+
+  // Determine which months to display based on view mode
+  const displayMonths = viewMode === 'current' ? currentViewMonths : pastMonths;
 
   return (
     <div className="roadmap-page">
@@ -99,38 +104,54 @@ function Roadmap(): React.ReactElement {
           <h1>Product Roadmap</h1>
           <p>See what's planned and track our progress</p>
         </div>
-      </div>
-
-      <div className="roadmap-search">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search roadmap items..."
-        />
-        {searchTerm && (
-          <button className="clear-btn" onClick={() => setSearchTerm('')}>
-            ×
+        <div className="view-toggle">
+          <button
+            className={`view-toggle-btn ${viewMode === 'current' ? 'active' : ''}`}
+            onClick={() => setViewMode('current')}
+          >
+            Current
           </button>
-        )}
-      </div>
-
-      <div className="roadmap-legend">
-        <div className="legend-item">
-          <span className="legend-dot planned"></span>
-          <span>Planned</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-dot in-progress"></span>
-          <span>In Progress</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-dot done"></span>
-          <span>Done</span>
+          <button
+            className={`view-toggle-btn ${viewMode === 'past' ? 'active' : ''}`}
+            onClick={() => setViewMode('past')}
+          >
+            Past Releases
+          </button>
         </div>
       </div>
 
-      {sortedMonths.length === 0 ? (
+      <div className="roadmap-controls">
+        <div className="roadmap-search">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search roadmap items..."
+          />
+          {searchTerm && (
+            <button className="clear-btn" onClick={() => setSearchTerm('')}>
+              ×
+            </button>
+          )}
+        </div>
+
+        <div className="roadmap-legend">
+          <div className="legend-item">
+            <span className="legend-dot planned"></span>
+            <span>Planned</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot in-progress"></span>
+            <span>In Progress</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot done"></span>
+            <span>Done</span>
+          </div>
+        </div>
+      </div>
+
+      {displayMonths.length === 0 ? (
         <div className="empty-state">
           <span className="empty-icon">🗺️</span>
           {searchTerm ? (
@@ -138,53 +159,34 @@ function Roadmap(): React.ReactElement {
               <p>No items match your search</p>
               <span className="empty-subtext">Try a different search term</span>
             </>
-          ) : (
+          ) : viewMode === 'current' ? (
             <>
               <p>No items on the roadmap yet</p>
               <span className="empty-subtext">
                 Admins can add items to the roadmap by assigning sprints to suggestions
               </span>
             </>
+          ) : (
+            <>
+              <p>No past releases</p>
+              <span className="empty-subtext">
+                Completed items from previous months will appear here
+              </span>
+            </>
           )}
         </div>
       ) : (
-        <>
-          {/* Future and Current */}
-          {(futureMonths.length > 0 || currentMonths.length > 0) && (
-            <div className="roadmap-section">
-              <h2 className="section-title">Upcoming</h2>
-              <div className="roadmap-timeline">
-                {[...futureMonths, ...currentMonths].map(month => (
-                  <RoadmapMonth
-                    key={month}
-                    month={month}
-                    suggestions={groupedByMonth[month]}
-                    status={categorizeMonth(month)}
-                    isCurrent={month === currentMonth}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Past */}
-          {pastMonths.length > 0 && (
-            <div className="roadmap-section past-section">
-              <h2 className="section-title">Past</h2>
-              <div className="roadmap-timeline">
-                {pastMonths.map(month => (
-                  <RoadmapMonth
-                    key={month}
-                    month={month}
-                    suggestions={groupedByMonth[month]}
-                    status="past"
-                    isCurrent={false}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+        <div className="roadmap-timeline">
+          {displayMonths.map(month => (
+            <RoadmapMonth
+              key={month}
+              month={month}
+              suggestions={groupedByMonth[month]}
+              status={categorizeMonth(month)}
+              isCurrent={month === currentMonth}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

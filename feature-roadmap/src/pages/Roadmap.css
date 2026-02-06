@@ -4,7 +4,12 @@
 }
 
 .roadmap-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: var(--card-padding);
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .roadmap-page .page-header h1 {
@@ -19,9 +24,45 @@
   font-size: 0.95rem;
 }
 
+.view-toggle {
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.view-toggle-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: var(--color-textSecondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.view-toggle-btn:hover {
+  color: var(--color-text);
+}
+
+.view-toggle-btn.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.roadmap-controls {
+  display: flex;
+  gap: var(--gap);
+  margin-bottom: var(--card-padding);
+  flex-wrap: wrap;
+}
+
 .roadmap-search {
   position: relative;
-  margin-bottom: var(--card-padding);
+  flex: 1;
+  min-width: 200px;
 }
 
 .roadmap-search input {
@@ -61,11 +102,10 @@
 .roadmap-legend {
   display: flex;
   gap: var(--card-padding);
-  margin-bottom: var(--card-padding);
   padding: var(--gap) var(--card-padding);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: calc(var(--border-radius) + 2px);
+  border-radius: var(--border-radius);
 }
 
 .legend-item {
@@ -92,29 +132,6 @@
 
 .legend-dot.done {
   background: var(--color-accent);
-}
-
-.roadmap-section {
-  margin-bottom: var(--card-padding);
-}
-
-.roadmap-section:last-child {
-  margin-bottom: 0;
-}
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-textSecondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--gap);
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.past-section .section-title {
-  color: var(--color-textSecondary);
 }
 
 .roadmap-timeline {
@@ -149,6 +166,23 @@
 }
 
 @media (max-width: 600px) {
+  .roadmap-page .page-header {
+    flex-direction: column;
+  }
+
+  .view-toggle {
+    width: 100%;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .roadmap-controls {
+    flex-direction: column;
+  }
+
   .roadmap-legend {
     flex-direction: column;
     gap: 12px;
