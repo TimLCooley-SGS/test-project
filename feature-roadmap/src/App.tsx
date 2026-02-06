@@ -23,6 +23,7 @@ function App(): React.ReactElement {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const location = useLocation();
 
   // Check if we're on the embed route
@@ -82,8 +83,6 @@ function App(): React.ReactElement {
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
-
-  const [showLogin, setShowLogin] = useState(false);
 
   const handleShowLogin = (): void => {
     setShowLogin(true);
