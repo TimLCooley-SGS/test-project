@@ -4,6 +4,8 @@ import { initializeStorage, getCurrentUser, setCurrentUser, clearCurrentUser, ge
 import { User } from './types/theme';
 import { IntegrationsProvider } from './context/IntegrationsContext';
 import Login from './pages/Login';
+import Landing from './pages/Landing';
+import Pricing from './pages/Pricing';
 import Home from './pages/Home';
 import Roadmap from './pages/Roadmap';
 import EmbedView from './pages/EmbedView';
@@ -14,6 +16,7 @@ import Integrations from './pages/admin/Integrations';
 import Embed from './pages/admin/Embed';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import PublicNavbar from './components/PublicNavbar';
 import './App.css';
 
 function App(): React.ReactElement {
@@ -80,8 +83,31 @@ function App(): React.ReactElement {
     return <div className="loading">Loading...</div>;
   }
 
+  const [showLogin, setShowLogin] = useState(false);
+
+  const handleShowLogin = (): void => {
+    setShowLogin(true);
+  };
+
+  const handleCloseLogin = (): void => {
+    setShowLogin(false);
+  };
+
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    if (showLogin) {
+      return <Login onLogin={handleLogin} onBack={handleCloseLogin} />;
+    }
+
+    return (
+      <>
+        <PublicNavbar onLoginClick={handleShowLogin} />
+        <Routes>
+          <Route path="/" element={<Landing onGetStarted={handleShowLogin} />} />
+          <Route path="/pricing" element={<Pricing onGetStarted={handleShowLogin} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </>
+    );
   }
 
   return (

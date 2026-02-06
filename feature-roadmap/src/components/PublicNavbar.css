@@ -1,0 +1,122 @@
+.public-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 100;
+}
+
+.public-navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.public-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.public-brand-logo {
+  height: 36px;
+  width: auto;
+}
+
+.public-brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.public-brand-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.public-navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.public-nav-link {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-textSecondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.public-nav-link:hover,
+.public-nav-link.active {
+  color: var(--color-primary);
+}
+
+.public-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.public-login-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.public-login-btn:hover {
+  background: var(--color-hover);
+  border-color: var(--color-textSecondary);
+}
+
+.public-signup-btn {
+  padding: 8px 20px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.public-signup-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .public-navbar-container {
+    padding: 0 16px;
+  }
+
+  .public-navbar-links {
+    display: none;
+  }
+
+  .public-login-btn {
+    display: none;
+  }
+
+  .public-signup-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+}

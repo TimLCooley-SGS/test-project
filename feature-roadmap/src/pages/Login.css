@@ -14,6 +14,30 @@
   width: 100%;
   max-width: 420px;
   overflow: hidden;
+  position: relative;
+}
+
+.login-back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: var(--border-radius);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.login-back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .login-header {
@@ -77,7 +101,14 @@
 }
 
 .btn-icon {
-  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-hover);
+  border-radius: 10px;
+  color: var(--color-primary);
 }
 
 .btn-text {
