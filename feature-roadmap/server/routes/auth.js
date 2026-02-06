@@ -1,0 +1,241 @@
+const express = require('express');
+const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
+const db = require('../db');
+const { generateToken, authenticate } = require('../middleware/auth');
+
+const router = express.Router();
+
+// POST /api/auth/register - Register new organization and admin user
+router.post('/register', async (req, res) => {
+  const client = await db.getClient();
+
+  try {
+    const { organizationName, name, email, password } = req.body;
+
+    // Validate input
+    if (!organizationName || !name || !email || !password) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    // Generate slug from organization name
+    const slug = organizationName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    // Check if organization slug already exists
+    const existingOrg = await client.query(
+      'SELECT id FROM organizations WHERE slug = $1',
+      [slug]
+    );
+
+    if (existingOrg.rows.length > 0) {
+      return res.status(400).json({ error: 'An organization with this name already exists' });
+    }
+
+    // Check if email already exists
+    const existingUser = await client.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    await client.query('BEGIN');
+
+    // Create organization
+    const orgId = uuidv4();
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 15); // 15-day trial
+
+    await client.query(
+      `INSERT INTO organizations (id, name, slug, plan, trial_ends_at)
+       VALUES ($1, $2, $3, 'pro', $4)`,
+      [orgId, organizationName, slug, trialEndsAt]
+    );
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create admin user (first user is always admin)
+    const userId = uuidv4();
+    await client.query(
+      `INSERT INTO users (id, organization_id, email, password_hash, name, role)
+       VALUES ($1, $2, $3, $4, $5, 'admin')`,
+      [userId, orgId, email.toLowerCase(), passwordHash, name]
+    );
+
+    // Create default categories
+    const defaultCategories = ['UI', 'Performance', 'Mobile', 'Dashboard', 'API', 'Security'];
+    for (let i = 0; i < defaultCategories.length; i++) {
+      await client.query(
+        `INSERT INTO categories (organization_id, name, sort_order)
+         VALUES ($1, $2, $3)`,
+        [orgId, defaultCategories[i], i + 1]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    // Generate token
+    const token = generateToken(userId, orgId);
+
+    res.status(201).json({
+      message: 'Organization created successfully',
+      token,
+      user: {
+        id: userId,
+        name,
+        email: email.toLowerCase(),
+        role: 'admin',
+        organizationId: orgId,
+        organizationName,
+        organizationSlug: slug,
+      },
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Failed to create organization' });
+  } finally {
+    client.release();
+  }
+});
+
+// POST /api/auth/login - Login user
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    // Find user by email
+    const result = await db.query(
+      `SELECT u.*, o.name as organization_name, o.slug as organization_slug, o.plan as organization_plan
+       FROM users u
+       JOIN organizations o ON u.organization_id = o.id
+       WHERE u.email = $1 AND o.is_active = true`,
+      [email.toLowerCase()]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const user = result.rows[0];
+
+    // Verify password
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Update last login
+    await db.query(
+      'UPDATE users SET last_login_at = NOW() WHERE id = $1',
+      [user.id]
+    );
+
+    // Generate token
+    const token = generateToken(user.id, user.organization_id);
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        organizationId: user.organization_id,
+        organizationName: user.organization_name,
+        organizationSlug: user.organization_slug,
+        customerValue: user.customer_value,
+        company: user.company,
+      },
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// GET /api/auth/me - Get current user
+router.get('/me', authenticate, async (req, res) => {
+  res.json({
+    user: {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      organizationId: req.user.organization_id,
+      organizationName: req.user.organization_name,
+      organizationSlug: req.user.organization_slug,
+      customerValue: req.user.customer_value,
+      company: req.user.company,
+    },
+  });
+});
+
+// POST /api/auth/invite - Invite user to organization (admin only)
+router.post('/invite', authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { email, name, role = 'user' } = req.body;
+
+    if (!email || !name) {
+      return res.status(400).json({ error: 'Email and name are required' });
+    }
+
+    // Check if user already exists in this organization
+    const existing = await db.query(
+      'SELECT id FROM users WHERE email = $1 AND organization_id = $2',
+      [email.toLowerCase(), req.user.organization_id]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'User already exists in this organization' });
+    }
+
+    // Create user with temporary password (they should reset it)
+    const tempPassword = Math.random().toString(36).slice(-12);
+    const passwordHash = await bcrypt.hash(tempPassword, 10);
+
+    const userId = uuidv4();
+    await db.query(
+      `INSERT INTO users (id, organization_id, email, password_hash, name, role)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [userId, req.user.organization_id, email.toLowerCase(), passwordHash, name, role]
+    );
+
+    // In production, send an email with the temp password or a password reset link
+    res.status(201).json({
+      message: 'User invited successfully',
+      user: {
+        id: userId,
+        email: email.toLowerCase(),
+        name,
+        role,
+      },
+      // Only return temp password in development
+      ...(process.env.NODE_ENV !== 'production' && { tempPassword }),
+    });
+  } catch (error) {
+    console.error('Invite error:', error);
+    res.status(500).json({ error: 'Failed to invite user' });
+  }
+});
+
+module.exports = router;
