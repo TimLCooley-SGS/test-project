@@ -1,0 +1,113 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #764ba2 100%);
+  padding: var(--card-padding);
+}
+
+.login-card {
+  background: var(--color-surface);
+  border-radius: calc(var(--border-radius) * 2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+}
+
+.login-header {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  padding: 32px;
+  text-align: center;
+}
+
+.login-header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-heading);
+}
+
+.login-header p {
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+.login-content {
+  padding: 32px;
+}
+
+.login-content h2 {
+  text-align: center;
+  color: var(--color-text);
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+}
+
+.login-info {
+  text-align: center;
+  color: var(--color-textSecondary);
+  margin-bottom: var(--card-padding);
+  font-size: 0.9rem;
+}
+
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap) var(--card-padding);
+  border: 2px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  background: var(--color-surface);
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.login-btn:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 144, 217, 0.2);
+}
+
+.btn-icon {
+  font-size: 2rem;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.btn-text strong {
+  font-size: 1.05rem;
+  color: var(--color-text);
+}
+
+.btn-text small {
+  font-size: 0.85rem;
+  color: var(--color-textSecondary);
+}
+
+.admin-btn:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.login-footer {
+  background: var(--color-background);
+  padding: var(--gap);
+  text-align: center;
+}
+
+.login-footer p {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+}

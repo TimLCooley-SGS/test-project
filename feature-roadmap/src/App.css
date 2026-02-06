@@ -1,0 +1,34 @@
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--color-textSecondary);
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-container {
+  display: flex;
+  flex: 1;
+  padding-top: 60px; /* Height of navbar */
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 240px; /* Width of sidebar */
+  padding: 24px;
+  min-height: calc(100vh - 60px);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: var(--gap);
+  }
+}

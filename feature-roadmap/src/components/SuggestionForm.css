@@ -1,0 +1,87 @@
+.suggestion-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  padding: var(--card-padding);
+  margin-bottom: var(--card-padding);
+}
+
+.suggestion-form h3 {
+  font-size: 1.2rem;
+  color: var(--color-text);
+  margin-bottom: var(--card-padding);
+}
+
+.form-group {
+  margin-bottom: var(--gap);
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-textSecondary);
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: var(--card-padding);
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  color: var(--color-textSecondary);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.submit-btn {
+  padding: 10px 20px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover {
+  opacity: 0.9;
+}

@@ -1,0 +1,204 @@
+.users-page {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.users-page .page-header {
+  margin-bottom: var(--card-padding);
+}
+
+.users-page .page-header h1 {
+  font-size: 1.75rem;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  font-weight: var(--font-weight-heading);
+}
+
+.users-page .page-header p {
+  color: var(--color-textSecondary);
+  font-size: 0.95rem;
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: var(--card-padding);
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.search-box .clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-textSecondary);
+  line-height: 1;
+  padding: 0;
+}
+
+.search-box .clear-btn:hover {
+  color: var(--color-text);
+}
+
+.users-list {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  overflow: hidden;
+}
+
+.empty-message {
+  padding: 40px;
+  text-align: center;
+  color: var(--color-textSecondary);
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap) var(--card-padding);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.user-item:last-child {
+  border-bottom: none;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: var(--font-weight-heading);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.user-email {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-role {
+  flex-shrink: 0;
+}
+
+.role-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.role-badge.admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.role-badge.user {
+  background: var(--color-hover);
+  color: var(--color-textSecondary);
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toggle-btn.promote {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.toggle-btn.promote:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.toggle-btn.demote {
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+
+.toggle-btn.demote:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+.users-info {
+  margin-top: var(--card-padding);
+  padding: var(--gap);
+  background: var(--color-background);
+  border-radius: var(--border-radius);
+}
+
+.users-info p {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .user-item {
+    flex-wrap: wrap;
+  }
+
+  .user-info {
+    flex-basis: calc(100% - 60px);
+  }
+
+  .user-role {
+    order: 5;
+    margin-left: 60px;
+  }
+
+  .toggle-btn {
+    order: 6;
+    margin-left: auto;
+  }
+}
