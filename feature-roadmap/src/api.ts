@@ -214,3 +214,72 @@ export async function deleteUser(id: string): Promise<void> {
     method: 'DELETE',
   });
 }
+
+// --- Public Fetch (no auth, no 401 redirect) ---
+
+async function publicFetch(path: string, options: RequestInit = {}): Promise<any> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> || {}),
+  };
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || `Request failed (${response.status})`);
+  }
+
+  if (response.status === 204) return null;
+  return response.json();
+}
+
+// --- Public Embed API ---
+
+export async function fetchEmbedConfig(slug: string): Promise<any> {
+  return publicFetch(`/embed/${slug}/config`);
+}
+
+export async function fetchEmbedSuggestions(slug: string, fingerprint?: string): Promise<any[]> {
+  const params = fingerprint ? `?fingerprint=${encodeURIComponent(fingerprint)}` : '';
+  return publicFetch(`/embed/${slug}/suggestions${params}`);
+}
+
+export async function fetchEmbedCategories(slug: string): Promise<Category[]> {
+  return publicFetch(`/embed/${slug}/categories`);
+}
+
+export async function embedVote(slug: string, suggestionId: string, fingerprint: string): Promise<{ voted: boolean }> {
+  return publicFetch(`/embed/${slug}/suggestions/${suggestionId}/vote`, {
+    method: 'POST',
+    body: JSON.stringify({ fingerprint }),
+  });
+}
+
+export async function embedCreateSuggestion(
+  slug: string,
+  title: string,
+  description: string,
+  categoryId?: string
+): Promise<any> {
+  return publicFetch(`/embed/${slug}/suggestions`, {
+    method: 'POST',
+    body: JSON.stringify({ title, description, categoryId }),
+  });
+}
+
+// --- Admin Embed API ---
+
+export async function fetchAdminEmbedConfig(): Promise<{ config: any; slug: string }> {
+  return apiFetch('/embed/config');
+}
+
+export async function updateAdminEmbedConfig(config: any): Promise<{ config: any; slug: string }> {
+  return apiFetch('/embed/config', {
+    method: 'PATCH',
+    body: JSON.stringify(config),
+  });
+}

@@ -11,7 +11,7 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
     const result = await db.query(
       `SELECT id, name, email, role, customer_value, company, crm_id, created_at, last_login_at
        FROM users
-       WHERE organization_id = $1
+       WHERE organization_id = $1 AND email != 'anonymous@system.internal'
        ORDER BY created_at`,
       [req.user.organization_id]
     );

@@ -76,6 +76,7 @@ export interface User {
   crmId?: string; // ID in external CRM system
   organizationId?: string;
   organizationName?: string;
+  organizationSlug?: string;
 }
 
 // Suggestion types

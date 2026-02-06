@@ -1,22 +1,50 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getSuggestions, getCategories, getEmbedConfig, updateSuggestion, addSuggestion, generateId } from '../storage';
-import { Suggestion } from '../types/theme';
+import { fetchEmbedConfig, fetchEmbedSuggestions, fetchEmbedCategories, embedVote, embedCreateSuggestion } from '../api';
+import { generateFingerprint } from '../utils/fingerprint';
+import { Category } from '../types/theme';
 import { EmbedView as EmbedViewType } from '../types/embed';
 import Icon from '../components/Icon';
 import './EmbedView.css';
 
 const statusColors: Record<string, string> = {
-  'Under Review': '#f59e0b',
-  'Planned': '#3b82f6',
-  'In Progress': '#8b5cf6',
-  'Done': '#10b981',
+  under_review: '#f59e0b',
+  planned: '#3b82f6',
+  in_progress: '#8b5cf6',
+  done: '#10b981',
 };
+
+const statusLabels: Record<string, string> = {
+  under_review: 'Under Review',
+  planned: 'Planned',
+  in_progress: 'In Progress',
+  done: 'Done',
+};
+
+interface EmbedSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  categoryId: string | null;
+  status: string;
+  sprint: string | null;
+  votes: number;
+  createdAt: string;
+  hasVoted: boolean;
+}
 
 function EmbedView(): React.ReactElement {
   const [searchParams] = useSearchParams();
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const slug = searchParams.get('slug');
+
+  const [suggestions, setSuggestions] = useState<EmbedSuggestion[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [config, setConfig] = useState<any>(null);
+  const [fingerprint, setFingerprint] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [activeView, setActiveView] = useState<EmbedViewType>('suggestions');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -25,24 +53,60 @@ function EmbedView(): React.ReactElement {
   const [newDescription, setNewDescription] = useState('');
   const [newCategory, setNewCategory] = useState('');
 
-  // Get config and URL params
-  const config = getEmbedConfig();
-  const showHeader = searchParams.get('header') !== 'false';
-  const showVoting = searchParams.get('voting') !== 'false';
-  const showFilters = searchParams.get('filters') !== 'false';
-  const allowSubmit = searchParams.get('submit') === 'true';
-  const view = (searchParams.get('view') as EmbedViewType) || config.defaultView;
+  // Derive display flags from config with URL param overrides
+  const showHeader = config ? (searchParams.get('header') !== null ? searchParams.get('header') !== 'false' : config.showHeader) : true;
+  const showVoting = config ? (searchParams.get('voting') !== null ? searchParams.get('voting') !== 'false' : config.showVoting) : true;
+  const showFilters = config ? (searchParams.get('filters') !== null ? searchParams.get('filters') !== 'false' : config.showFilters) : true;
+  const allowSubmit = config ? (searchParams.get('submit') !== null ? searchParams.get('submit') === 'true' : config.allowSubmissions) : false;
   const customCssEnabled = searchParams.get('css') === 'custom';
 
+  // Load data on mount
   useEffect(() => {
-    setSuggestions(getSuggestions());
-    setCategories(getCategories());
-    setActiveView(view);
-  }, [view]);
+    if (!slug) {
+      setError('Missing slug parameter. Please provide ?slug=your-org-slug');
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadData() {
+      try {
+        const fp = await generateFingerprint();
+        if (cancelled) return;
+        setFingerprint(fp);
+
+        const s = slug!;
+        const [configData, suggestionsData, categoriesData] = await Promise.all([
+          fetchEmbedConfig(s),
+          fetchEmbedSuggestions(s, fp),
+          fetchEmbedCategories(s),
+        ]);
+
+        if (cancelled) return;
+        setConfig(configData);
+        setSuggestions(suggestionsData);
+        setCategories(categoriesData);
+
+        // Set initial view from config or URL param
+        const viewParam = searchParams.get('view') as EmbedViewType;
+        setActiveView(viewParam || configData.defaultView || 'suggestions');
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load embed data');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadData();
+    return () => { cancelled = true; };
+  }, [slug, searchParams]);
 
   // Inject custom CSS if enabled
   useEffect(() => {
-    if (customCssEnabled && config.customCss) {
+    if (customCssEnabled && config?.customCss) {
       const style = document.createElement('style');
       style.id = 'embed-custom-css';
       style.textContent = config.customCss;
@@ -53,60 +117,51 @@ function EmbedView(): React.ReactElement {
         if (existing) existing.remove();
       };
     }
-  }, [customCssEnabled, config.customCss]);
+  }, [customCssEnabled, config?.customCss]);
 
-  const handleVote = (suggestionId: string) => {
-    if (!showVoting) return;
+  const handleVote = useCallback(async (suggestionId: string) => {
+    if (!showVoting || !slug || !fingerprint) return;
 
-    const suggestion = suggestions.find(s => s.id === suggestionId);
-    if (!suggestion) return;
+    // Optimistic update
+    setSuggestions(prev => prev.map(s => {
+      if (s.id !== suggestionId) return s;
+      return {
+        ...s,
+        hasVoted: !s.hasVoted,
+        votes: s.hasVoted ? Math.max(0, s.votes - 1) : s.votes + 1,
+      };
+    }));
 
-    // For embed, we use a simple localStorage key for anonymous voting
-    const votedKey = `embed_voted_${suggestionId}`;
-    const hasVoted = localStorage.getItem(votedKey) === 'true';
-
-    let updates: Partial<Suggestion>;
-
-    if (hasVoted) {
-      updates = { votes: Math.max(0, suggestion.votes - 1) };
-      localStorage.removeItem(votedKey);
-    } else {
-      updates = { votes: suggestion.votes + 1 };
-      localStorage.setItem(votedKey, 'true');
+    try {
+      await embedVote(slug, suggestionId, fingerprint);
+    } catch {
+      // Revert on error
+      setSuggestions(prev => prev.map(s => {
+        if (s.id !== suggestionId) return s;
+        return {
+          ...s,
+          hasVoted: !s.hasVoted,
+          votes: s.hasVoted ? Math.max(0, s.votes - 1) : s.votes + 1,
+        };
+      }));
     }
+  }, [showVoting, slug, fingerprint]);
 
-    const updated = updateSuggestion(suggestionId, updates);
-    setSuggestions(updated);
-  };
-
-  const hasVoted = (suggestionId: string): boolean => {
-    return localStorage.getItem(`embed_voted_${suggestionId}`) === 'true';
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !newDescription.trim() || !newCategory) return;
+    if (!newTitle.trim() || !slug) return;
 
-    const newSuggestion: Suggestion = {
-      id: generateId(),
-      title: newTitle,
-      description: newDescription,
-      category: newCategory,
-      status: 'Under Review',
-      sprint: null,
-      votes: 0,
-      votedBy: [],
-      createdBy: 'embed-user',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-
-    const updated = addSuggestion(newSuggestion);
-    setSuggestions(updated);
-    setShowForm(false);
-    setNewTitle('');
-    setNewDescription('');
-    setNewCategory('');
-  };
+    try {
+      const created = await embedCreateSuggestion(slug, newTitle, newDescription, newCategory || undefined);
+      setSuggestions(prev => [created, ...prev]);
+      setShowForm(false);
+      setNewTitle('');
+      setNewDescription('');
+      setNewCategory('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit suggestion');
+    }
+  }, [slug, newTitle, newDescription, newCategory]);
 
   // Filter suggestions
   const filteredSuggestions = useMemo(() => {
@@ -118,8 +173,8 @@ function EmbedView(): React.ReactElement {
 
   // Group by month for roadmap view
   const roadmapMonths = useMemo(() => {
-    const scheduled = suggestions.filter(s => s.sprint && ['Planned', 'In Progress', 'Done'].includes(s.status));
-    const grouped: Record<string, Suggestion[]> = {};
+    const scheduled = suggestions.filter(s => s.sprint && ['planned', 'in_progress', 'done'].includes(s.status));
+    const grouped: Record<string, EmbedSuggestion[]> = {};
 
     scheduled.forEach(s => {
       const month = s.sprint!;
@@ -127,7 +182,6 @@ function EmbedView(): React.ReactElement {
       grouped[month].push(s);
     });
 
-    // Sort months chronologically
     const sortedMonths = Object.keys(grouped).sort((a, b) => {
       const dateA = new Date(a);
       const dateB = new Date(b);
@@ -140,7 +194,19 @@ function EmbedView(): React.ReactElement {
     }));
   }, [suggestions]);
 
-  const statuses = ['Under Review', 'Planned', 'In Progress', 'Done'];
+  const statuses = ['under_review', 'planned', 'in_progress', 'done'];
+
+  if (loading) {
+    return <div className="embed-view" style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="embed-view" style={{ display: 'flex', justifyContent: 'center', padding: '40px', color: '#ef4444' }}>
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="embed-view">
@@ -155,7 +221,7 @@ function EmbedView(): React.ReactElement {
         </div>
       )}
 
-      {config.allowedViews.length > 1 && config.allowedViews.includes('both') === false && (
+      {config && config.allowedViews.length > 1 && !config.allowedViews.includes('both') && (
         <div className="embed-tabs">
           {config.allowedViews.includes('suggestions') && (
             <button
@@ -186,7 +252,7 @@ function EmbedView(): React.ReactElement {
               >
                 <option value="all">All Categories</option>
                 {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
                 ))}
               </select>
 
@@ -196,7 +262,7 @@ function EmbedView(): React.ReactElement {
               >
                 <option value="all">All Statuses</option>
                 {statuses.map(status => (
-                  <option key={status} value={status}>{status}</option>
+                  <option key={status} value={status}>{statusLabels[status]}</option>
                 ))}
               </select>
             </div>
@@ -230,18 +296,16 @@ function EmbedView(): React.ReactElement {
                     fontSize: '0.9rem',
                     resize: 'vertical',
                   }}
-                  required
                 />
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     style={{ flex: 1, padding: '10px' }}
-                    required
                   >
                     <option value="">Select Category</option>
                     {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
                   <button type="submit" style={{
@@ -283,12 +347,12 @@ function EmbedView(): React.ReactElement {
                 <div key={suggestion.id} className="embed-suggestion-card">
                   <div className="embed-vote">
                     <button
-                      className={`embed-vote-btn ${hasVoted(suggestion.id) ? 'voted' : ''} ${!showVoting ? 'disabled' : ''}`}
+                      className={`embed-vote-btn ${suggestion.hasVoted ? 'voted' : ''} ${!showVoting ? 'disabled' : ''}`}
                       onClick={() => handleVote(suggestion.id)}
                       disabled={!showVoting}
-                      title={showVoting ? (hasVoted(suggestion.id) ? 'Remove vote' : 'Upvote') : 'Voting disabled'}
+                      title={showVoting ? (suggestion.hasVoted ? 'Remove vote' : 'Upvote') : 'Voting disabled'}
                     >
-                      <span className="embed-vote-arrow">▲</span>
+                      <span className="embed-vote-arrow">&#9650;</span>
                       <span className="embed-vote-count">{suggestion.votes}</span>
                     </button>
                   </div>
@@ -302,7 +366,7 @@ function EmbedView(): React.ReactElement {
                           className="embed-badge status"
                           style={{ backgroundColor: statusColors[suggestion.status] }}
                         >
-                          {suggestion.status}
+                          {statusLabels[suggestion.status] || suggestion.status}
                         </span>
                       </div>
                     </div>
@@ -348,7 +412,7 @@ function EmbedView(): React.ReactElement {
                         style={{ backgroundColor: statusColors[item.status] }}
                       />
                       <span className="embed-item-title">{item.title}</span>
-                      <span className="embed-item-votes">▲ {item.votes}</span>
+                      <span className="embed-item-votes">&#9650; {item.votes}</span>
                     </div>
                   ))}
                 </div>

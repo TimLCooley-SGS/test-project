@@ -134,7 +134,7 @@ function App(): React.ReactElement {
                   <Route path="/admin/users" element={<Users />} />
                   <Route path="/admin/theme" element={<Theme />} />
                   <Route path="/admin/integrations" element={<Integrations />} />
-                  <Route path="/admin/embed" element={<Embed />} />
+                  <Route path="/admin/embed" element={<Embed user={user} />} />
                 </>
               )}
               <Route path="*" element={<Navigate to="/" replace />} />

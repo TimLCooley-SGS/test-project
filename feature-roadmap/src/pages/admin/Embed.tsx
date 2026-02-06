@@ -1,20 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { getEmbedConfig, updateEmbedConfig } from '../../storage';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { fetchAdminEmbedConfig, updateAdminEmbedConfig } from '../../api';
 import { EmbedConfig, EmbedView } from '../../types/embed';
+import { DEFAULT_EMBED_CONFIG } from '../../types/embed';
+import { User } from '../../types/theme';
 import Icon from '../../components/Icon';
 import './Embed.css';
 
 type PreviewTab = 'preview' | 'code';
 
-function Embed(): React.ReactElement {
-  const [config, setConfig] = useState<EmbedConfig>(getEmbedConfig());
+interface EmbedProps {
+  user: User;
+}
+
+function Embed({ user }: EmbedProps): React.ReactElement {
+  const [config, setConfig] = useState<EmbedConfig>(DEFAULT_EMBED_CONFIG);
+  const [slug, setSlug] = useState<string>(user.organizationSlug || '');
   const [previewTab, setPreviewTab] = useState<PreviewTab>('code');
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadRef = useRef(true);
 
+  // Load config from API on mount
   useEffect(() => {
-    // Save config changes to storage
-    updateEmbedConfig(config);
-  }, [config]);
+    fetchAdminEmbedConfig()
+      .then(data => {
+        setConfig({ ...DEFAULT_EMBED_CONFIG, ...data.config });
+        setSlug(data.slug);
+      })
+      .catch(err => {
+        console.error('Failed to load embed config:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+        // Allow saves after initial load completes
+        setTimeout(() => { initialLoadRef.current = false; }, 100);
+      });
+  }, []);
+
+  // Debounced auto-save on config changes
+  useEffect(() => {
+    if (initialLoadRef.current || loading) return;
+
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    saveTimerRef.current = setTimeout(() => {
+      updateAdminEmbedConfig(config).catch(err => {
+        console.error('Failed to save embed config:', err);
+      });
+    }, 500);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [config, loading]);
 
   const handleToggle = (key: keyof EmbedConfig) => {
     setConfig(prev => ({ ...prev, [key]: !prev[key] }));
@@ -40,10 +81,11 @@ function Embed(): React.ReactElement {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
-  const generateEmbedCode = (): string => {
+  const generateEmbedCode = useCallback((): string => {
     const baseUrl = window.location.origin;
     const params = new URLSearchParams();
 
+    params.set('slug', slug);
     params.set('view', config.defaultView);
     if (!config.showHeader) params.set('header', 'false');
     if (!config.showVoting) params.set('voting', 'false');
@@ -61,7 +103,7 @@ function Embed(): React.ReactElement {
   style="border: 1px solid #e5e7eb; border-radius: 8px;"
   title="Feature Roadmap"
 ></iframe>`;
-  };
+  }, [config, slug]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(generateEmbedCode());
@@ -74,6 +116,10 @@ function Embed(): React.ReactElement {
     roadmap: 'Roadmap',
     both: 'Both Views',
   };
+
+  if (loading) {
+    return <div className="embed-page" style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>;
+  }
 
   return (
     <div className="embed-page">
@@ -318,7 +364,7 @@ function Embed(): React.ReactElement {
                 </div>
                 <iframe
                   className="preview-frame"
-                  src={`/embed?view=${config.defaultView}&preview=true`}
+                  src={`/embed?slug=${slug}&view=${config.defaultView}&preview=true`}
                   title="Embed Preview"
                 />
               </div>
