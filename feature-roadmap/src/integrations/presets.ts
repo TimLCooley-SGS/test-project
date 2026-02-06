@@ -3,6 +3,7 @@ import { IntegrationCategory, IntegrationMeta, IntegrationType } from '../types/
 // Category labels for UI display
 export const INTEGRATION_CATEGORIES: Record<IntegrationCategory, string> = {
   'product-management': 'Product Management',
+  'crm': 'CRM',
 };
 
 // Preset metadata for each integration type
@@ -104,6 +105,74 @@ export const INTEGRATION_PRESETS: IntegrationMeta[] = [
       },
     ],
   },
+  // CRM Integrations
+  {
+    type: 'salesforce',
+    name: 'Salesforce',
+    icon: 'globe',
+    description: 'Sync customer values from Salesforce',
+    category: 'crm',
+    fields: [
+      {
+        key: 'instanceUrl',
+        label: 'Instance URL',
+        type: 'url',
+        placeholder: 'https://yourcompany.salesforce.com',
+        required: true,
+      },
+      {
+        key: 'clientId',
+        label: 'Client ID',
+        type: 'text',
+        placeholder: 'Connected App Client ID',
+        required: true,
+      },
+      {
+        key: 'clientSecret',
+        label: 'Client Secret',
+        type: 'password',
+        placeholder: 'Connected App Client Secret',
+        required: true,
+      },
+      {
+        key: 'refreshToken',
+        label: 'Refresh Token',
+        type: 'password',
+        placeholder: 'OAuth Refresh Token',
+        required: true,
+      },
+      {
+        key: 'valueField',
+        label: 'Value Field',
+        type: 'text',
+        placeholder: 'e.g., AnnualRevenue, Amount',
+        required: true,
+      },
+    ],
+  },
+  {
+    type: 'hubspot',
+    name: 'HubSpot',
+    icon: 'users',
+    description: 'Sync customer values from HubSpot',
+    category: 'crm',
+    fields: [
+      {
+        key: 'accessToken',
+        label: 'Access Token',
+        type: 'password',
+        placeholder: 'Your HubSpot private app access token',
+        required: true,
+      },
+      {
+        key: 'valueProperty',
+        label: 'Value Property',
+        type: 'text',
+        placeholder: 'e.g., annualrevenue, deal_value',
+        required: true,
+      },
+    ],
+  },
 ];
 
 // Get metadata for a specific integration type
@@ -115,6 +184,7 @@ export function getIntegrationMeta(type: IntegrationType): IntegrationMeta | und
 export function getIntegrationsByCategory(): Record<IntegrationCategory, IntegrationMeta[]> {
   const grouped: Record<IntegrationCategory, IntegrationMeta[]> = {
     'product-management': [],
+    'crm': [],
   };
 
   INTEGRATION_PRESETS.forEach((preset) => {

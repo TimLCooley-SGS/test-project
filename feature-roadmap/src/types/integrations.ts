@@ -1,8 +1,8 @@
 // Integration type definitions
 
-export type IntegrationType = 'jira' | 'linear' | 'asana';
+export type IntegrationType = 'jira' | 'linear' | 'asana' | 'salesforce' | 'hubspot';
 
-export type IntegrationCategory = 'product-management';
+export type IntegrationCategory = 'product-management' | 'crm';
 
 // Base configuration shared by all integrations
 export interface BaseIntegrationConfig {
@@ -39,8 +39,25 @@ export interface AsanaConfig extends BaseIntegrationConfig {
   projectGid: string;
 }
 
+// Salesforce-specific configuration
+export interface SalesforceConfig extends BaseIntegrationConfig {
+  type: 'salesforce';
+  instanceUrl: string;
+  clientId: string;
+  clientSecret: string;
+  refreshToken: string;
+  valueField: string; // Field to use for customer value (e.g., 'AnnualRevenue', 'Amount')
+}
+
+// HubSpot-specific configuration
+export interface HubSpotConfig extends BaseIntegrationConfig {
+  type: 'hubspot';
+  accessToken: string;
+  valueProperty: string; // Property to use for customer value (e.g., 'annualrevenue', 'deal_value')
+}
+
 // Union type for all integration configurations
-export type IntegrationConfig = JiraConfig | LinearConfig | AsanaConfig;
+export type IntegrationConfig = JiraConfig | LinearConfig | AsanaConfig | SalesforceConfig | HubSpotConfig;
 
 // Track when suggestions are pushed to external tools
 export interface SuggestionPush {

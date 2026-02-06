@@ -16,9 +16,11 @@ const KEYS = {
 
 // Default data for initialization
 const defaultUsers: User[] = [
-  { id: 'admin1', name: 'Admin User', email: 'admin@test.com', role: 'admin' },
-  { id: 'user1', name: 'Demo User', email: 'user@test.com', role: 'user' },
-  { id: 'user2', name: 'Jane Smith', email: 'jane@test.com', role: 'user' },
+  { id: 'admin1', name: 'Admin User', email: 'admin@test.com', role: 'admin', customerValue: 0, company: 'Internal' },
+  { id: 'user1', name: 'Demo User', email: 'user@test.com', role: 'user', customerValue: 50000, company: 'Acme Corp', crmId: 'sf-001' },
+  { id: 'user2', name: 'Jane Smith', email: 'jane@test.com', role: 'user', customerValue: 120000, company: 'TechGiant Inc', crmId: 'sf-002' },
+  { id: 'user3', name: 'Bob Wilson', email: 'bob@startup.io', role: 'user', customerValue: 15000, company: 'Startup.io', crmId: 'sf-003' },
+  { id: 'user4', name: 'Sarah Chen', email: 'sarah@enterprise.com', role: 'user', customerValue: 500000, company: 'Enterprise Co', crmId: 'sf-004' },
 ];
 
 const defaultCategories: string[] = ['UI', 'Performance', 'Mobile', 'Dashboard', 'API', 'Security'];
@@ -322,4 +324,36 @@ export function updateEmbedConfig(updates: Partial<EmbedConfig>): EmbedConfig {
   const updated = { ...config, ...updates };
   setEmbedConfig(updated);
   return updated;
+}
+
+// Impact Score Calculation
+// Impact = Sum of customer values of all voters
+// This weights votes by the value of the customers who voted
+export function calculateImpactScore(suggestion: Suggestion): number {
+  const users = getUsers();
+  let impactScore = 0;
+
+  suggestion.votedBy.forEach(userId => {
+    const user = users.find(u => u.id === userId);
+    if (user && user.customerValue) {
+      impactScore += user.customerValue;
+    }
+  });
+
+  return impactScore;
+}
+
+// Get user by ID
+export function getUserById(userId: string): User | undefined {
+  return getUsers().find(u => u.id === userId);
+}
+
+// Format currency for display
+export function formatCurrency(value: number): string {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  } else if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}K`;
+  }
+  return `$${value}`;
 }

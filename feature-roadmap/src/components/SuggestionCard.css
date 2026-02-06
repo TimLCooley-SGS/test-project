@@ -107,6 +107,18 @@
   color: #0052cc;
 }
 
+.impact-badge {
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #92400e;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .card-description {
   color: var(--color-textSecondary);
   font-size: 0.95rem;

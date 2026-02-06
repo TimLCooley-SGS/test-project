@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Suggestion, User } from '../types/theme';
 import PushToIntegration from './PushToIntegration';
 import Icon from './Icon';
+import { calculateImpactScore, formatCurrency } from '../storage';
 import './SuggestionCard.css';
 
 interface SuggestionCardProps {
@@ -39,6 +40,12 @@ function SuggestionCard({
   const [showRequirements, setShowRequirements] = useState(!!suggestion.requirements);
   const [requirements, setRequirements] = useState(suggestion.requirements || '');
   const [jiraSuccess, setJiraSuccess] = useState(false);
+
+  // Calculate impact score for admins
+  const impactScore = useMemo(() => {
+    if (!isAdmin) return 0;
+    return calculateImpactScore(suggestion);
+  }, [isAdmin, suggestion]);
 
   // Generate sprint options (current month + next 6 months)
   const getSprintOptions = (): string[] => {
@@ -93,6 +100,11 @@ function SuggestionCard({
             )}
             {suggestion.jiraSynced && (
               <span className="jira-badge"><Icon name="external-link" size={12} /> In Jira</span>
+            )}
+            {isAdmin && impactScore > 0 && (
+              <span className="impact-badge" title="Impact Score based on customer value">
+                <Icon name="chevron-up" size={12} /> {formatCurrency(impactScore)}
+              </span>
             )}
           </div>
         </div>

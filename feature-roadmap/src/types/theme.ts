@@ -62,6 +62,9 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'user';
+  customerValue?: number; // Value from CRM (e.g., ARR, deal size, tier score)
+  company?: string;
+  crmId?: string; // ID in external CRM system
 }
 
 // Suggestion types

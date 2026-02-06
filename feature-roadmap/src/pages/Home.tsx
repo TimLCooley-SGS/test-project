@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSuggestions, addSuggestion, updateSuggestion, generateId, getCategories } from '../storage';
+import { getSuggestions, addSuggestion, updateSuggestion, generateId, getCategories, calculateImpactScore } from '../storage';
 import { Suggestion, User } from '../types/theme';
 import SuggestionForm from '../components/SuggestionForm';
 import SuggestionCard from '../components/SuggestionCard';
@@ -10,7 +10,7 @@ interface HomeProps {
   user: User;
 }
 
-type SortOption = 'votes' | 'newest' | 'oldest';
+type SortOption = 'votes' | 'newest' | 'oldest' | 'impact';
 
 function Home({ user }: HomeProps): React.ReactElement {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -109,8 +109,11 @@ function Home({ user }: HomeProps): React.ReactElement {
       if (sortBy === 'votes') return b.votes - a.votes;
       if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === 'impact') return calculateImpactScore(b) - calculateImpactScore(a);
       return 0;
     });
+
+  const isAdmin = user.role === 'admin';
 
   const statuses = ['Under Review', 'Planned', 'In Progress', 'Done'];
 
@@ -139,6 +142,7 @@ function Home({ user }: HomeProps): React.ReactElement {
           <label>Sort by:</label>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
             <option value="votes">Most Votes</option>
+            {isAdmin && <option value="impact">Impact Score</option>}
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
           </select>
