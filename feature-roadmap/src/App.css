@@ -21,7 +21,8 @@
 
 .main-content {
   flex: 1;
-  margin-left: 240px; /* Width of sidebar */
+  margin-left: var(--sidebar-width, 240px); /* Width of sidebar */
+  transition: margin-left 0.2s ease;
   padding: 24px;
   min-height: calc(100vh - 60px);
 }

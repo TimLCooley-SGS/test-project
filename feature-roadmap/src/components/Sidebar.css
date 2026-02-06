@@ -8,15 +8,28 @@
   border-right: 1px solid var(--color-border);
   padding: var(--card-padding) 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease;
+}
+
+.sidebar.collapsed {
+  width: 60px;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  flex: 1;
 }
 
 .nav-section {
+  padding: 0 8px;
+}
+
+.sidebar:not(.collapsed) .nav-section {
   padding: 0 16px;
 }
 
@@ -27,6 +40,16 @@
   color: var(--color-textSecondary);
   margin-bottom: 12px;
   padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .nav-title {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-link {
@@ -39,6 +62,7 @@
   text-decoration: none;
   font-size: 0.95rem;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .nav-link:hover {
@@ -56,7 +80,83 @@
 .nav-icon {
   font-size: 1.1rem;
   width: 24px;
+  min-width: 24px;
   text-align: center;
+}
+
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.sidebar.collapsed .nav-label {
+  opacity: 0;
+  width: 0;
+}
+
+/* Tooltip for collapsed state */
+.sidebar.collapsed .nav-link:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  padding: 6px 12px;
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-size: 0.85rem;
+  font-weight: 400;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Tooltip arrow */
+.sidebar.collapsed .nav-link:hover::before {
+  content: '';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 2px;
+  border: 6px solid transparent;
+  border-right-color: var(--color-text);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Toggle button */
+.sidebar-toggle {
+  margin: 16px 8px;
+  padding: 10px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  color: var(--color-textSecondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar:not(.collapsed) .sidebar-toggle {
+  margin: 16px;
+}
+
+.sidebar-toggle:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+  border-color: var(--color-primary);
+}
+
+.toggle-icon {
+  font-size: 1.1rem;
+  font-weight: bold;
+  line-height: 1;
 }
 
 @media (max-width: 768px) {
