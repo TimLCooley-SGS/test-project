@@ -363,8 +363,17 @@
   color: var(--color-text);
 }
 
+.toggle-input input[type="checkbox"],
 .toggle-label input[type="checkbox"] {
-  display: none;
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 .toggle-slider {
@@ -376,6 +385,7 @@
   border-radius: 24px;
   transition: background 0.2s ease;
   flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .toggle-slider::after {
@@ -388,6 +398,7 @@
   background: white;
   border-radius: 50%;
   transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-label input[type="checkbox"]:checked + .toggle-slider {
