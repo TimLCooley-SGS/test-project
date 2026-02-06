@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { Suggestion } from '../types/theme';
 import './RoadmapMonth.css';
 
+interface ExtendedSuggestion extends Suggestion {
+  rolledOver?: boolean;
+  originalSprint?: string | null;
+}
+
 interface RoadmapMonthProps {
   month: string;
-  suggestions: Suggestion[];
+  suggestions: ExtendedSuggestion[];
   status: 'past' | 'current' | 'future';
   isCurrent: boolean;
 }
@@ -54,13 +59,20 @@ function RoadmapMonth({ month, suggestions, status, isCurrent }: RoadmapMonthPro
       {isExpanded && (
         <div className="month-content">
           {suggestions.map(suggestion => (
-            <div key={suggestion.id} className="roadmap-item">
+            <div key={suggestion.id} className={`roadmap-item ${suggestion.rolledOver ? 'rolled-over' : ''}`}>
               <span
                 className="item-status-dot"
                 style={{ backgroundColor: statusColors[suggestion.status] }}
               ></span>
               <div className="item-content">
-                <h4 className="item-title">{suggestion.title}</h4>
+                <div className="item-header">
+                  <h4 className="item-title">{suggestion.title}</h4>
+                  {suggestion.rolledOver && suggestion.originalSprint && (
+                    <span className="rolled-over-badge" title={`Originally scheduled for ${suggestion.originalSprint}`}>
+                      ↻ from {suggestion.originalSprint}
+                    </span>
+                  )}
+                </div>
                 <p className="item-description">{suggestion.description}</p>
                 <div className="item-meta">
                   <span className="item-category">{suggestion.category}</span>

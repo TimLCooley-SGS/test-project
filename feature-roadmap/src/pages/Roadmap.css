@@ -19,6 +19,45 @@
   font-size: 0.95rem;
 }
 
+.roadmap-search {
+  position: relative;
+  margin-bottom: var(--card-padding);
+}
+
+.roadmap-search input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.roadmap-search input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.roadmap-search .clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-textSecondary);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.roadmap-search .clear-btn:hover {
+  color: var(--color-text);
+}
+
 .roadmap-legend {
   display: flex;
   gap: var(--card-padding);
@@ -53,6 +92,29 @@
 
 .legend-dot.done {
   background: var(--color-accent);
+}
+
+.roadmap-section {
+  margin-bottom: var(--card-padding);
+}
+
+.roadmap-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--gap);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.past-section .section-title {
+  color: var(--color-textSecondary);
 }
 
 .roadmap-timeline {
