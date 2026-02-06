@@ -98,9 +98,13 @@ function Home({ user }: HomeProps): React.ReactElement {
   };
 
   // Filter and sort suggestions
+  // Hide "Done" by default - only show when explicitly filtered
   const filteredSuggestions = suggestions
     .filter(s => filterCategory === 'all' || s.category === filterCategory)
-    .filter(s => filterStatus === 'all' || s.status === filterStatus)
+    .filter(s => {
+      if (filterStatus === 'all') return s.status !== 'Done';
+      return s.status === filterStatus;
+    })
     .sort((a, b) => {
       if (sortBy === 'votes') return b.votes - a.votes;
       if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
