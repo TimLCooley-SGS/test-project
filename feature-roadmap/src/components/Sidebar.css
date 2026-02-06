@@ -90,7 +90,6 @@
   white-space: nowrap;
   overflow: hidden;
   transition: opacity 0.2s ease, width 0.2s ease;
-  line-height: 1;
 }
 
 .sidebar.collapsed .nav-label {
