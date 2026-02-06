@@ -1,4 +1,5 @@
 import { User, Suggestion } from './types/theme';
+import { IntegrationConfig, SuggestionPush } from './types/integrations';
 
 // localStorage helper functions
 
@@ -7,6 +8,8 @@ const KEYS = {
   USERS: 'users',
   SUGGESTIONS: 'suggestions',
   CATEGORIES: 'categories',
+  INTEGRATIONS: 'integrations',
+  PUSH_HISTORY: 'pushHistory',
 } as const;
 
 // Default data for initialization
@@ -165,4 +168,52 @@ export function deleteCategory(category: string): string[] {
 // Generate unique ID
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Integrations
+export function getIntegrations(): IntegrationConfig[] {
+  return getData<IntegrationConfig[]>(KEYS.INTEGRATIONS) || [];
+}
+
+export function setIntegrations(integrations: IntegrationConfig[]): void {
+  setData(KEYS.INTEGRATIONS, integrations);
+}
+
+export function addIntegration(integration: IntegrationConfig): IntegrationConfig[] {
+  const integrations = getIntegrations();
+  integrations.push(integration);
+  setIntegrations(integrations);
+  return integrations;
+}
+
+export function updateIntegration(integrationId: string, updates: Partial<IntegrationConfig>): IntegrationConfig[] {
+  const integrations = getIntegrations();
+  const index = integrations.findIndex(i => i.id === integrationId);
+  if (index !== -1) {
+    integrations[index] = { ...integrations[index], ...updates } as IntegrationConfig;
+    setIntegrations(integrations);
+  }
+  return integrations;
+}
+
+export function deleteIntegration(integrationId: string): IntegrationConfig[] {
+  const integrations = getIntegrations().filter(i => i.id !== integrationId);
+  setIntegrations(integrations);
+  return integrations;
+}
+
+// Push History
+export function getPushHistory(): SuggestionPush[] {
+  return getData<SuggestionPush[]>(KEYS.PUSH_HISTORY) || [];
+}
+
+export function addPushRecord(record: SuggestionPush): SuggestionPush[] {
+  const history = getPushHistory();
+  history.push(record);
+  setData(KEYS.PUSH_HISTORY, history);
+  return history;
+}
+
+export function getPushesForSuggestion(suggestionId: string): SuggestionPush[] {
+  return getPushHistory().filter(p => p.suggestionId === suggestionId);
 }

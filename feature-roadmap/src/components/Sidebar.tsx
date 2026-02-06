@@ -63,6 +63,7 @@ function Sidebar({ user }: SidebarProps): React.ReactElement {
             <NavItem to="/admin/categories" icon="🏷️" label="Categories" collapsed={collapsed} />
             <NavItem to="/admin/users" icon="👥" label="Users" collapsed={collapsed} />
             <NavItem to="/admin/theme" icon="🎨" label="Theme" collapsed={collapsed} />
+            <NavItem to="/admin/integrations" icon="🔗" label="Integrations" collapsed={collapsed} />
           </div>
         )}
       </nav>

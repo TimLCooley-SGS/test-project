@@ -1,5 +1,6 @@
 import React from 'react';
 import { Suggestion, User } from '../types/theme';
+import PushToIntegration from './PushToIntegration';
 import './SuggestionCard.css';
 
 interface SuggestionCardProps {
@@ -114,6 +115,8 @@ function SuggestionCard({
                 ))}
               </select>
             </div>
+
+            <PushToIntegration suggestion={suggestion} />
           </div>
         )}
       </div>

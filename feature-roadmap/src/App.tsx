@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { initializeStorage, getCurrentUser, setCurrentUser, clearCurrentUser, getUsers } from './storage';
 import { User } from './types/theme';
+import { IntegrationsProvider } from './context/IntegrationsContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Roadmap from './pages/Roadmap';
 import Categories from './pages/admin/Categories';
 import Users from './pages/admin/Users';
 import Theme from './pages/admin/Theme';
+import Integrations from './pages/admin/Integrations';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import './App.css';
@@ -54,26 +56,29 @@ function App(): React.ReactElement {
   }
 
   return (
-    <div className="app">
-      <Navbar user={user} onLogout={handleLogout} />
-      <div className="app-container">
-        <Sidebar user={user} />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home user={user} />} />
-            <Route path="/roadmap" element={<Roadmap />} />
-            {user.role === 'admin' && (
-              <>
-                <Route path="/admin/categories" element={<Categories />} />
-                <Route path="/admin/users" element={<Users />} />
-                <Route path="/admin/theme" element={<Theme />} />
-              </>
-            )}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
+    <IntegrationsProvider userId={user.id}>
+      <div className="app">
+        <Navbar user={user} onLogout={handleLogout} />
+        <div className="app-container">
+          <Sidebar user={user} />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home user={user} />} />
+              <Route path="/roadmap" element={<Roadmap />} />
+              {user.role === 'admin' && (
+                <>
+                  <Route path="/admin/categories" element={<Categories />} />
+                  <Route path="/admin/users" element={<Users />} />
+                  <Route path="/admin/theme" element={<Theme />} />
+                  <Route path="/admin/integrations" element={<Integrations />} />
+                </>
+              )}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
+        </div>
       </div>
-    </div>
+    </IntegrationsProvider>
   );
 }
 
