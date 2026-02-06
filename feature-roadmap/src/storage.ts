@@ -1,5 +1,6 @@
 import { User, Suggestion } from './types/theme';
 import { IntegrationConfig, SuggestionPush } from './types/integrations';
+import { EmbedConfig, DEFAULT_EMBED_CONFIG } from './types/embed';
 
 // localStorage helper functions
 
@@ -10,6 +11,7 @@ const KEYS = {
   CATEGORIES: 'categories',
   INTEGRATIONS: 'integrations',
   PUSH_HISTORY: 'pushHistory',
+  EMBED_CONFIG: 'embedConfig',
 } as const;
 
 // Default data for initialization
@@ -304,4 +306,20 @@ export function addPushRecord(record: SuggestionPush): SuggestionPush[] {
 
 export function getPushesForSuggestion(suggestionId: string): SuggestionPush[] {
   return getPushHistory().filter(p => p.suggestionId === suggestionId);
+}
+
+// Embed Config
+export function getEmbedConfig(): EmbedConfig {
+  return getData<EmbedConfig>(KEYS.EMBED_CONFIG) || DEFAULT_EMBED_CONFIG;
+}
+
+export function setEmbedConfig(config: EmbedConfig): void {
+  setData(KEYS.EMBED_CONFIG, config);
+}
+
+export function updateEmbedConfig(updates: Partial<EmbedConfig>): EmbedConfig {
+  const config = getEmbedConfig();
+  const updated = { ...config, ...updates };
+  setEmbedConfig(updated);
+  return updated;
 }

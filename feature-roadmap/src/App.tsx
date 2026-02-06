@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { initializeStorage, getCurrentUser, setCurrentUser, clearCurrentUser, getUsers } from './storage';
 import { User } from './types/theme';
 import { IntegrationsProvider } from './context/IntegrationsContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Roadmap from './pages/Roadmap';
+import EmbedView from './pages/EmbedView';
 import Categories from './pages/admin/Categories';
 import Users from './pages/admin/Users';
 import Theme from './pages/admin/Theme';
 import Integrations from './pages/admin/Integrations';
+import Embed from './pages/admin/Embed';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import './App.css';
@@ -17,6 +19,10 @@ import './App.css';
 function App(): React.ReactElement {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  // Check if we're on the embed route
+  const isEmbedRoute = location.pathname === '/embed';
 
   useEffect(() => {
     // Initialize localStorage with default data
@@ -47,6 +53,15 @@ function App(): React.ReactElement {
     setUser(null);
   };
 
+  // Render embed view without authentication or app shell
+  if (isEmbedRoute) {
+    return (
+      <Routes>
+        <Route path="/embed" element={<EmbedView />} />
+      </Routes>
+    );
+  }
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -71,6 +86,7 @@ function App(): React.ReactElement {
                   <Route path="/admin/users" element={<Users />} />
                   <Route path="/admin/theme" element={<Theme />} />
                   <Route path="/admin/integrations" element={<Integrations />} />
+                  <Route path="/admin/embed" element={<Embed />} />
                 </>
               )}
               <Route path="*" element={<Navigate to="/" replace />} />
