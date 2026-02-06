@@ -1,13 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { User } from '../types/theme';
+import * as api from '../api';
 import Icon from '../components/Icon';
 import './Login.css';
 
 interface LoginProps {
-  onLogin: (role: 'admin' | 'user') => void;
+  onLoginSuccess: (user: User) => void;
   onBack?: () => void;
 }
 
-function Login({ onLogin, onBack }: LoginProps): React.ReactElement {
+type Mode = 'login' | 'register';
+
+function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
+  const [mode, setMode] = useState<Mode>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [organizationName, setOrganizationName] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      let result: { token: string; user: User };
+
+      if (mode === 'login') {
+        result = await api.login(email, password);
+      } else {
+        if (!name.trim() || !organizationName.trim()) {
+          setError('All fields are required');
+          setLoading(false);
+          return;
+        }
+        result = await api.register(organizationName.trim(), name.trim(), email, password);
+      }
+
+      api.setToken(result.token);
+      onLoginSuccess(result.user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="login-page">
       <div className="login-card">
@@ -23,38 +63,94 @@ function Login({ onLogin, onBack }: LoginProps): React.ReactElement {
         </div>
 
         <div className="login-content">
-          <h2>Demo Login</h2>
+          <h2>{mode === 'login' ? 'Sign In' : 'Create Account'}</h2>
           <p className="login-info">
-            This is a demo application. Choose a role to explore:
+            {mode === 'login'
+              ? 'Sign in to your account'
+              : 'Register a new organization'}
           </p>
 
-          <div className="login-buttons">
-            <button
-              className="login-btn admin-btn"
-              onClick={() => onLogin('admin')}
-            >
-              <span className="btn-icon"><Icon name="settings" size={24} /></span>
-              <span className="btn-text">
-                <strong>Login as Admin</strong>
-                <small>Manage suggestions, users & categories</small>
-              </span>
-            </button>
+          {error && <div className="login-error">{error}</div>}
 
-            <button
-              className="login-btn user-btn"
-              onClick={() => onLogin('user')}
-            >
-              <span className="btn-icon"><Icon name="users" size={24} /></span>
-              <span className="btn-text">
-                <strong>Login as User</strong>
-                <small>Submit suggestions & vote</small>
-              </span>
+          <form className="login-form" onSubmit={handleSubmit}>
+            {mode === 'register' && (
+              <>
+                <div className="form-field">
+                  <label htmlFor="orgName">Organization Name</label>
+                  <input
+                    id="orgName"
+                    type="text"
+                    value={organizationName}
+                    onChange={(e) => setOrganizationName(e.target.value)}
+                    placeholder="Your company name"
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="name">Your Name</label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Full name"
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="form-field">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
+                required
+                minLength={mode === 'register' ? 8 : undefined}
+              />
+            </div>
+
+            <button type="submit" className="login-submit-btn" disabled={loading}>
+              {loading
+                ? 'Please wait...'
+                : mode === 'login'
+                  ? 'Sign In'
+                  : 'Create Account'}
             </button>
+          </form>
+
+          <div className="login-toggle">
+            {mode === 'login' ? (
+              <p>
+                Don't have an account?{' '}
+                <button className="toggle-link" onClick={() => { setMode('register'); setError(''); }}>
+                  Create one
+                </button>
+              </p>
+            ) : (
+              <p>
+                Already have an account?{' '}
+                <button className="toggle-link" onClick={() => { setMode('login'); setError(''); }}>
+                  Sign in
+                </button>
+              </p>
+            )}
           </div>
-        </div>
-
-        <div className="login-footer">
-          <p>Data is stored locally in your browser</p>
         </div>
       </div>
     </div>

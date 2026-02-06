@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers, updateUser } from '../../storage';
+import * as api from '../../api';
 import { User } from '../../types/theme';
 import './Users.css';
 
 function Users(): React.ReactElement {
-  const [users, setUsersState] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const loadUsers = async (): Promise<void> => {
+    try {
+      const data = await api.fetchUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error('Failed to load users:', err);
+    }
+  };
+
   useEffect(() => {
-    setUsersState(getUsers());
+    loadUsers();
   }, []);
 
-  const handleToggleRole = (userId: string): void => {
+  const handleToggleRole = async (userId: string): Promise<void> => {
     const user = users.find(u => u.id === userId);
     if (!user) return;
 
     const newRole: 'admin' | 'user' = user.role === 'admin' ? 'user' : 'admin';
-    const updated = updateUser(userId, { role: newRole });
-    setUsersState(updated);
+    try {
+      await api.updateUser(userId, { role: newRole });
+      await loadUsers();
+    } catch (err) {
+      console.error('Failed to update user role:', err);
+    }
   };
 
   const filteredUsers = users.filter(user =>
@@ -65,7 +78,7 @@ function Users(): React.ReactElement {
               </div>
               <div className="user-role">
                 <span className={`role-badge ${user.role}`}>
-                  {user.role === 'admin' ? '👑 Admin' : '👤 User'}
+                  {user.role === 'admin' ? 'Admin' : 'User'}
                 </span>
               </div>
               <button
@@ -77,12 +90,6 @@ function Users(): React.ReactElement {
             </div>
           ))
         )}
-      </div>
-
-      <div className="users-info">
-        <p>
-          <strong>Note:</strong> This is a demo. In a real application, user data would come from a database.
-        </p>
       </div>
     </div>
   );

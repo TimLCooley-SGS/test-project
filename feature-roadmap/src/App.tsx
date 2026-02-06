@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { initializeStorage, getCurrentUser, setCurrentUser, clearCurrentUser, getUsers } from './storage';
+import * as api from './api';
 import { User } from './types/theme';
 import { IntegrationsProvider } from './context/IntegrationsContext';
 import Login from './pages/Login';
@@ -43,31 +43,31 @@ function App(): React.ReactElement {
   };
 
   useEffect(() => {
-    // Initialize localStorage with default data
-    initializeStorage();
-
-    // Check for existing session
-    const savedUser = getCurrentUser();
-    if (savedUser) {
-      setUser(savedUser);
+    // Check for existing token and validate it
+    const token = api.getToken();
+    if (token) {
+      api.getCurrentUser()
+        .then(savedUser => {
+          setUser(savedUser);
+        })
+        .catch(() => {
+          api.clearToken();
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const handleLogin = (role: 'admin' | 'user'): void => {
-    const users = getUsers();
-    const selectedUser = role === 'admin'
-      ? users.find(u => u.role === 'admin')
-      : users.find(u => u.role === 'user');
-
-    if (selectedUser) {
-      setCurrentUser(selectedUser);
-      setUser(selectedUser);
-    }
+  const handleLoginSuccess = (loggedInUser: User): void => {
+    setUser(loggedInUser);
+    setShowLogin(false);
   };
 
   const handleLogout = (): void => {
-    clearCurrentUser();
+    api.logout();
     setUser(null);
   };
 
@@ -94,7 +94,7 @@ function App(): React.ReactElement {
 
   if (!user) {
     if (showLogin) {
-      return <Login onLogin={handleLogin} onBack={handleCloseLogin} />;
+      return <Login onLoginSuccess={handleLoginSuccess} onBack={handleCloseLogin} />;
     }
 
     return (

@@ -3,15 +3,15 @@ import { useIntegrations } from '../context/IntegrationsContext';
 import { Suggestion } from '../types/theme';
 import { SuggestionPush } from '../types/integrations';
 import { getIntegrationMeta } from '../integrations/presets';
-import { getCurrentUser } from '../storage';
 import Icon, { IconName } from './Icon';
 import './PushToIntegration.css';
 
 interface PushToIntegrationProps {
   suggestion: Suggestion;
+  userId?: string;
 }
 
-function PushToIntegration({ suggestion }: PushToIntegrationProps): React.ReactElement | null {
+function PushToIntegration({ suggestion, userId }: PushToIntegrationProps): React.ReactElement | null {
   const { integrations, pushSuggestion, getSuggestionPushes } = useIntegrations();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
@@ -42,14 +42,13 @@ function PushToIntegration({ suggestion }: PushToIntegrationProps): React.ReactE
   }, [isOpen]);
 
   const handlePush = async (integrationId: string): Promise<void> => {
-    const user = getCurrentUser();
-    if (!user) return;
+    if (!userId) return;
 
     setLoading(integrationId);
     setError(null);
 
     try {
-      const pushRecord = await pushSuggestion(suggestion.id, integrationId, user.id);
+      const pushRecord = await pushSuggestion(suggestion.id, integrationId, userId);
       setPushes((prev) => [...prev, pushRecord]);
       setIsOpen(false);
     } catch (err) {

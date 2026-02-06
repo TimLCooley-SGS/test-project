@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Category } from '../types/theme';
 import './SuggestionForm.css';
 
 interface SuggestionFormProps {
-  categories: string[];
+  categories: Category[];
   onSubmit: (title: string, description: string, category: string) => void;
   onCancel: () => void;
 }
@@ -10,7 +11,7 @@ interface SuggestionFormProps {
 function SuggestionForm({ categories, onSubmit, onCancel }: SuggestionFormProps): React.ReactElement {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(categories[0] || '');
+  const [category, setCategory] = useState(categories[0]?.name || '');
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -57,7 +58,7 @@ function SuggestionForm({ categories, onSubmit, onCancel }: SuggestionFormProps)
           onChange={(e) => setCategory(e.target.value)}
         >
           {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
+            <option key={cat.id} value={cat.name}>{cat.name}</option>
           ))}
         </select>
       </div>

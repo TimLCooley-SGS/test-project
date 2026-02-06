@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getSuggestions } from '../storage';
+import * as api from '../api';
 import { Suggestion } from '../types/theme';
 import RoadmapMonth from '../components/RoadmapMonth';
 import Icon from '../components/Icon';
@@ -14,7 +14,9 @@ function Roadmap(): React.ReactElement {
   const [viewMode, setViewMode] = useState<ViewMode>('current');
 
   useEffect(() => {
-    setSuggestions(getSuggestions());
+    api.fetchSuggestions()
+      .then(data => setSuggestions(data))
+      .catch(err => console.error('Failed to load suggestions:', err));
   }, []);
 
   // Get current month info - memoized to avoid recalculation on every render

@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Suggestion, User } from '../types/theme';
 import PushToIntegration from './PushToIntegration';
 import Icon from './Icon';
-import { calculateImpactScore, formatCurrency } from '../storage';
+import { formatCurrency } from '../storage';
 import './SuggestionCard.css';
 
 interface SuggestionCardProps {
@@ -41,11 +41,7 @@ function SuggestionCard({
   const [requirements, setRequirements] = useState(suggestion.requirements || '');
   const [jiraSuccess, setJiraSuccess] = useState(false);
 
-  // Calculate impact score for admins
-  const impactScore = useMemo(() => {
-    if (!isAdmin) return 0;
-    return calculateImpactScore(suggestion);
-  }, [isAdmin, suggestion]);
+  const impactScore = suggestion.impactScore || 0;
 
   // Generate sprint options (current month + next 6 months)
   const getSprintOptions = (): string[] => {
@@ -157,7 +153,7 @@ function SuggestionCard({
               <Icon name="file-text" size={14} /> {suggestion.requirements ? 'Edit Requirements' : 'Create Requirements'}
             </button>
 
-            <PushToIntegration suggestion={suggestion} />
+            <PushToIntegration suggestion={suggestion} userId={user.id} />
           </div>
         )}
 

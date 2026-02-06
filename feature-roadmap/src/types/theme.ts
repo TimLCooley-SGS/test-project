@@ -56,6 +56,15 @@ export interface ThemeContextType {
   importTheme: (file: File) => Promise<Theme>;
 }
 
+// Category type
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+  sortOrder: number;
+  suggestionCount?: number;
+}
+
 // User types
 export interface User {
   id: string;
@@ -65,6 +74,8 @@ export interface User {
   customerValue?: number; // Value from CRM (e.g., ARR, deal size, tier score)
   company?: string;
   crmId?: string; // ID in external CRM system
+  organizationId?: string;
+  organizationName?: string;
 }
 
 // Suggestion types
@@ -82,4 +93,5 @@ export interface Suggestion {
   requirements?: string;
   jiraSynced?: boolean;
   jiraSyncedAt?: string;
+  impactScore?: number;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getSuggestions, addSuggestion, updateSuggestion, generateId, getCategories, calculateImpactScore } from '../storage';
-import { Suggestion, User } from '../types/theme';
+import * as api from '../api';
+import { Suggestion, User, Category } from '../types/theme';
 import SuggestionForm from '../components/SuggestionForm';
 import SuggestionCard from '../components/SuggestionCard';
 import Icon from '../components/Icon';
@@ -14,68 +14,69 @@ type SortOption = 'votes' | 'newest' | 'oldest' | 'impact';
 
 function Home({ user }: HomeProps): React.ReactElement {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('votes');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
+  const loadData = async (): Promise<void> => {
+    try {
+      const [suggestionsData, categoriesData] = await Promise.all([
+        api.fetchSuggestions(),
+        api.fetchCategories(),
+      ]);
+      setSuggestions(suggestionsData);
+      setCategories(categoriesData);
+    } catch (err) {
+      console.error('Failed to load data:', err);
+    }
+  };
+
   useEffect(() => {
-    setSuggestions(getSuggestions());
-    setCategories(getCategories());
+    loadData();
   }, []);
 
-  const handleAddSuggestion = (title: string, description: string, category: string): void => {
-    const newSuggestion: Suggestion = {
-      id: generateId(),
-      title,
-      description,
-      category,
-      status: 'Under Review',
-      sprint: null,
-      votes: 0,
-      votedBy: [],
-      createdBy: user.id,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    const updated = addSuggestion(newSuggestion);
-    setSuggestions(updated);
-    setShowForm(false);
-  };
-
-  const handleVote = (suggestionId: string): void => {
-    const suggestion = suggestions.find(s => s.id === suggestionId);
-    if (!suggestion) return;
-
-    const hasVoted = suggestion.votedBy.includes(user.id);
-    let updates: Partial<Suggestion>;
-
-    if (hasVoted) {
-      // Remove vote
-      updates = {
-        votes: suggestion.votes - 1,
-        votedBy: suggestion.votedBy.filter(id => id !== user.id),
-      };
-    } else {
-      // Add vote
-      updates = {
-        votes: suggestion.votes + 1,
-        votedBy: [...suggestion.votedBy, user.id],
-      };
+  const handleAddSuggestion = async (title: string, description: string, categoryName: string): Promise<void> => {
+    try {
+      const category = categories.find(c => c.name === categoryName);
+      await api.createSuggestion(title, description, category?.id);
+      await loadData();
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to create suggestion:', err);
+      alert('Failed to create suggestion. Please try again.');
     }
-
-    const updated = updateSuggestion(suggestionId, updates);
-    setSuggestions(updated);
   };
 
-  const handleStatusChange = (suggestionId: string, status: string): void => {
-    const updated = updateSuggestion(suggestionId, { status: status as Suggestion['status'] });
-    setSuggestions(updated);
+  const handleVote = async (suggestionId: string): Promise<void> => {
+    try {
+      await api.voteSuggestion(suggestionId);
+      const updated = await api.fetchSuggestions();
+      setSuggestions(updated);
+    } catch (err) {
+      console.error('Failed to vote:', err);
+    }
   };
 
-  const handleSprintChange = (suggestionId: string, sprint: string): void => {
-    const updated = updateSuggestion(suggestionId, { sprint: sprint || null });
-    setSuggestions(updated);
+  const handleStatusChange = async (suggestionId: string, status: string): Promise<void> => {
+    try {
+      await api.updateSuggestion(suggestionId, { status: status as Suggestion['status'] });
+      const updated = await api.fetchSuggestions();
+      setSuggestions(updated);
+    } catch (err) {
+      console.error('Failed to update status:', err);
+    }
+  };
+
+  const handleSprintChange = async (suggestionId: string, sprint: string): Promise<void> => {
+    try {
+      await api.updateSuggestion(suggestionId, { sprint: sprint || null });
+      const updated = await api.fetchSuggestions();
+      setSuggestions(updated);
+    } catch (err) {
+      console.error('Failed to update sprint:', err);
+    }
   };
 
   const handleShare = (suggestion: Suggestion): void => {
@@ -84,17 +85,22 @@ function Home({ user }: HomeProps): React.ReactElement {
     alert('Link copied to clipboard!');
   };
 
-  const handleRequirementsChange = (suggestionId: string, requirements: string): void => {
-    const updated = updateSuggestion(suggestionId, { requirements });
-    setSuggestions(updated);
+  const handleRequirementsChange = async (suggestionId: string, requirements: string): Promise<void> => {
+    try {
+      await api.updateSuggestion(suggestionId, { requirements });
+    } catch (err) {
+      console.error('Failed to update requirements:', err);
+    }
   };
 
-  const handleJiraSync = (suggestionId: string): void => {
-    const updated = updateSuggestion(suggestionId, {
-      jiraSynced: true,
-      jiraSyncedAt: new Date().toISOString(),
-    });
-    setSuggestions(updated);
+  const handleJiraSync = async (suggestionId: string): Promise<void> => {
+    try {
+      await api.updateSuggestion(suggestionId, { requirements: suggestions.find(s => s.id === suggestionId)?.requirements || '' });
+      const updated = await api.fetchSuggestions();
+      setSuggestions(updated);
+    } catch (err) {
+      console.error('Failed to sync to Jira:', err);
+    }
   };
 
   // Filter and sort suggestions
@@ -109,7 +115,7 @@ function Home({ user }: HomeProps): React.ReactElement {
       if (sortBy === 'votes') return b.votes - a.votes;
       if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sortBy === 'impact') return calculateImpactScore(b) - calculateImpactScore(a);
+      if (sortBy === 'impact') return (b.impactScore || 0) - (a.impactScore || 0);
       return 0;
     });
 
@@ -153,7 +159,7 @@ function Home({ user }: HomeProps): React.ReactElement {
           <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
             <option value="all">All Categories</option>
             {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat.id} value={cat.name}>{cat.name}</option>
             ))}
           </select>
         </div>
