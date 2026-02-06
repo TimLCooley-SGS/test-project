@@ -9,7 +9,7 @@ interface LoginProps {
   onBack?: () => void;
 }
 
-type Mode = 'login' | 'register';
+type Mode = 'login' | 'register' | 'forgot';
 
 function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
   const [mode, setMode] = useState<Mode>('login');
@@ -18,14 +18,24 @@ function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
   const [name, setName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
+      if (mode === 'forgot') {
+        const data = await api.forgotPassword(email);
+        setSuccessMessage(data.message);
+        setLoading(false);
+        return;
+      }
+
       let result: { token: string; user: User };
 
       if (mode === 'login') {
@@ -63,14 +73,19 @@ function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
         </div>
 
         <div className="login-content">
-          <h2>{mode === 'login' ? 'Sign In' : 'Create Account'}</h2>
+          <h2>
+            {mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Forgot Password'}
+          </h2>
           <p className="login-info">
             {mode === 'login'
               ? 'Sign in to your account'
-              : 'Register a new organization'}
+              : mode === 'register'
+                ? 'Register a new organization'
+                : 'Enter your email to receive a reset link'}
           </p>
 
           {error && <div className="login-error">{error}</div>}
+          {successMessage && <div className="login-success">{successMessage}</div>}
 
           <form className="login-form" onSubmit={handleSubmit}>
             {mode === 'register' && (
@@ -112,25 +127,50 @@ function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
               />
             </div>
 
-            <div className="form-field">
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
-                required
-                minLength={mode === 'register' ? 8 : undefined}
-              />
-            </div>
+            {mode !== 'forgot' && (
+              <div className="form-field">
+                <label htmlFor="password">Password</label>
+                <div className="password-field-wrapper">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
+                    required
+                    minLength={mode === 'register' ? 8 : undefined}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    <Icon name={showPassword ? 'eye-off' : 'eye'} size={18} />
+                  </button>
+                </div>
+                {mode === 'login' && (
+                  <div className="forgot-link-wrapper">
+                    <button
+                      type="button"
+                      className="forgot-link"
+                      onClick={() => { setMode('forgot'); setError(''); setSuccessMessage(''); }}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <button type="submit" className="login-submit-btn" disabled={loading}>
               {loading
                 ? 'Please wait...'
                 : mode === 'login'
                   ? 'Sign In'
-                  : 'Create Account'}
+                  : mode === 'register'
+                    ? 'Create Account'
+                    : 'Send Reset Link'}
             </button>
           </form>
 
@@ -138,14 +178,14 @@ function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
             {mode === 'login' ? (
               <p>
                 Don't have an account?{' '}
-                <button className="toggle-link" onClick={() => { setMode('register'); setError(''); }}>
+                <button className="toggle-link" onClick={() => { setMode('register'); setError(''); setSuccessMessage(''); }}>
                   Create one
                 </button>
               </p>
             ) : (
               <p>
                 Already have an account?{' '}
-                <button className="toggle-link" onClick={() => { setMode('login'); setError(''); }}>
+                <button className="toggle-link" onClick={() => { setMode('login'); setError(''); setSuccessMessage(''); }}>
                   Sign in
                 </button>
               </p>

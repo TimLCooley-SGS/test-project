@@ -186,6 +186,20 @@ CREATE INDEX idx_sessions_token ON sessions(token);
 CREATE INDEX idx_sessions_user ON sessions(user_id);
 
 -- ============================================
+-- PASSWORD RESET TOKENS
+-- ============================================
+CREATE TABLE password_reset_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    used BOOLEAN DEFAULT false
+);
+
+CREATE INDEX idx_password_reset_tokens_token ON password_reset_tokens(token);
+
+-- ============================================
 -- HELPER FUNCTIONS
 -- ============================================
 

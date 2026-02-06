@@ -14,6 +14,7 @@ import Users from './pages/admin/Users';
 import Theme from './pages/admin/Theme';
 import Integrations from './pages/admin/Integrations';
 import Embed from './pages/admin/Embed';
+import ResetPassword from './pages/ResetPassword';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import PublicNavbar from './components/PublicNavbar';
@@ -26,8 +27,9 @@ function App(): React.ReactElement {
   const [showLogin, setShowLogin] = useState(false);
   const location = useLocation();
 
-  // Check if we're on the embed route
+  // Check if we're on the embed or reset-password route
   const isEmbedRoute = location.pathname === '/embed';
+  const isResetPasswordRoute = location.pathname === '/reset-password';
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -76,6 +78,15 @@ function App(): React.ReactElement {
     return (
       <Routes>
         <Route path="/embed" element={<EmbedView />} />
+      </Routes>
+    );
+  }
+
+  // Render reset-password page without authentication
+  if (isResetPasswordRoute) {
+    return (
+      <Routes>
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     );
   }
