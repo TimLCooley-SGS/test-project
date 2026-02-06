@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Suggestion, User } from '../types/theme';
 import PushToIntegration from './PushToIntegration';
+import Icon from './Icon';
 import './SuggestionCard.css';
 
 interface SuggestionCardProps {
@@ -71,7 +72,7 @@ function SuggestionCard({
           onClick={() => onVote(suggestion.id)}
           title={hasVoted ? 'Remove vote' : 'Upvote'}
         >
-          <span className="vote-arrow">▲</span>
+          <span className="vote-arrow"><Icon name="chevron-up" size={16} /></span>
           <span className="vote-count">{suggestion.votes}</span>
         </button>
       </div>
@@ -88,10 +89,10 @@ function SuggestionCard({
               {suggestion.status}
             </span>
             {suggestion.sprint && (
-              <span className="sprint-badge">📅 {suggestion.sprint}</span>
+              <span className="sprint-badge"><Icon name="calendar" size={12} /> {suggestion.sprint}</span>
             )}
             {suggestion.jiraSynced && (
-              <span className="jira-badge">🔷 In Jira</span>
+              <span className="jira-badge"><Icon name="external-link" size={12} /> In Jira</span>
             )}
           </div>
         </div>
@@ -105,7 +106,7 @@ function SuggestionCard({
 
           <div className="card-actions">
             <button className="action-btn share-btn" onClick={() => onShare(suggestion)}>
-              📋 Share
+              <Icon name="share" size={14} /> Share
             </button>
           </div>
         </div>
@@ -141,7 +142,7 @@ function SuggestionCard({
               className={`requirements-btn ${showRequirements ? 'active' : ''}`}
               onClick={() => setShowRequirements(!showRequirements)}
             >
-              📝 {suggestion.requirements ? 'Edit Requirements' : 'Create Requirements'}
+              <Icon name="file-text" size={14} /> {suggestion.requirements ? 'Edit Requirements' : 'Create Requirements'}
             </button>
 
             <PushToIntegration suggestion={suggestion} />
@@ -178,7 +179,7 @@ Example:
             <div className="requirements-actions">
               {jiraSuccess ? (
                 <div className="jira-success">
-                  ✓ Successfully added to Jira!
+                  <Icon name="check" size={14} /> Successfully added to Jira!
                 </div>
               ) : (
                 <button
@@ -186,7 +187,7 @@ Example:
                   onClick={handleAddToJira}
                   disabled={!requirements.trim() || suggestion.jiraSynced}
                 >
-                  🔷 {suggestion.jiraSynced ? 'Already in Jira' : 'Add to Jira'}
+                  <Icon name="external-link" size={14} /> {suggestion.jiraSynced ? 'Already in Jira' : 'Add to Jira'}
                 </button>
               )}
             </div>

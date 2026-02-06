@@ -20,6 +20,7 @@ const COLOR_LABELS: Record<keyof ThemeColors, string> = {
   error: 'Error',
   border: 'Border',
   hover: 'Hover',
+  icon: 'Icon',
 };
 
 function Theme(): React.ReactElement {

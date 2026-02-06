@@ -13,6 +13,7 @@ const defaultTheme: Theme = {
     error: '#ef4444',
     border: '#e1e5eb',
     hover: '#f0f2f5',
+    icon: '#6b7280',
   },
   typography: {
     fontFamily: 'Inter',

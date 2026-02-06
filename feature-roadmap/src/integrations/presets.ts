@@ -10,7 +10,7 @@ export const INTEGRATION_PRESETS: IntegrationMeta[] = [
   {
     type: 'jira',
     name: 'Jira',
-    icon: '🔷',
+    icon: 'external-link',
     description: 'Create issues in Atlassian Jira',
     category: 'product-management',
     fields: [
@@ -54,7 +54,7 @@ export const INTEGRATION_PRESETS: IntegrationMeta[] = [
   {
     type: 'linear',
     name: 'Linear',
-    icon: '📐',
+    icon: 'arrow-right',
     description: 'Create issues in Linear',
     category: 'product-management',
     fields: [
@@ -77,7 +77,7 @@ export const INTEGRATION_PRESETS: IntegrationMeta[] = [
   {
     type: 'asana',
     name: 'Asana',
-    icon: '🎯',
+    icon: 'check',
     description: 'Create tasks in Asana',
     category: 'product-management',
     fields: [

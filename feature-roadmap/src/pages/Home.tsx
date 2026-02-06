@@ -3,6 +3,7 @@ import { getSuggestions, addSuggestion, updateSuggestion, generateId, getCategor
 import { Suggestion, User } from '../types/theme';
 import SuggestionForm from '../components/SuggestionForm';
 import SuggestionCard from '../components/SuggestionCard';
+import Icon from '../components/Icon';
 import './Home.css';
 
 interface HomeProps {
@@ -163,7 +164,7 @@ function Home({ user }: HomeProps): React.ReactElement {
       <div className="suggestions-list">
         {filteredSuggestions.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">💡</span>
+            <span className="empty-icon"><Icon name="lightbulb" size={48} /></span>
             <p>No suggestions yet. Be the first to add one!</p>
           </div>
         ) : (

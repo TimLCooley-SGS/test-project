@@ -11,6 +11,7 @@ export interface ThemeColors {
   error: string;
   border: string;
   hover: string;
+  icon: string;
 }
 
 export interface ThemeTypography {

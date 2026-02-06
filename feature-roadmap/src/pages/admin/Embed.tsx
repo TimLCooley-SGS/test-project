@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getEmbedConfig, updateEmbedConfig } from '../../storage';
 import { EmbedConfig, EmbedView } from '../../types/embed';
+import Icon from '../../components/Icon';
 import './Embed.css';
 
 type PreviewTab = 'preview' | 'code';
@@ -91,7 +92,7 @@ function Embed(): React.ReactElement {
         <div className="embed-settings">
           {/* Enable/Disable */}
           <div className="settings-section">
-            <h3><span className="section-icon">🔌</span> Embed Status</h3>
+            <h3><span className="section-icon"><Icon name="toggle-right" size={18} /></span> Embed Status</h3>
             <div className="toggle-row">
               <div className="toggle-info">
                 <span className="toggle-label-text">Enable Embed</span>
@@ -112,7 +113,7 @@ function Embed(): React.ReactElement {
 
           {/* Views */}
           <div className="settings-section">
-            <h3><span className="section-icon">👁️</span> Allowed Views</h3>
+            <h3><span className="section-icon"><Icon name="eye" size={18} /></span> Allowed Views</h3>
             <div className="checkbox-group">
               {(['suggestions', 'roadmap', 'both'] as EmbedView[]).map(view => (
                 <label key={view} className="checkbox-item">
@@ -141,7 +142,7 @@ function Embed(): React.ReactElement {
 
           {/* Display Options */}
           <div className="settings-section">
-            <h3><span className="section-icon">🎛️</span> Display Options</h3>
+            <h3><span className="section-icon"><Icon name="settings" size={18} /></span> Display Options</h3>
             <div className="toggle-row">
               <div className="toggle-info">
                 <span className="toggle-label-text">Show Header</span>
@@ -205,7 +206,7 @@ function Embed(): React.ReactElement {
 
           {/* Size */}
           <div className="settings-section">
-            <h3><span className="section-icon">📐</span> Embed Size</h3>
+            <h3><span className="section-icon"><Icon name="settings" size={18} /></span> Embed Size</h3>
             <div className="size-inputs">
               <div className="size-input">
                 <label>Width</label>
@@ -230,7 +231,7 @@ function Embed(): React.ReactElement {
 
           {/* Custom CSS */}
           <div className="settings-section">
-            <h3><span className="section-icon">🎨</span> Custom CSS</h3>
+            <h3><span className="section-icon"><Icon name="palette" size={18} /></span> Custom CSS</h3>
             <div className="css-editor">
               <label>Custom Styles</label>
               <textarea
@@ -263,7 +264,7 @@ function Embed(): React.ReactElement {
 
           {/* Domain Restrictions */}
           <div className="settings-section">
-            <h3><span className="section-icon">🔒</span> Domain Restrictions</h3>
+            <h3><span className="section-icon"><Icon name="lock" size={18} /></span> Domain Restrictions</h3>
             <div className="domain-input">
               <label>Allowed Domains</label>
               <input
@@ -305,7 +306,7 @@ function Embed(): React.ReactElement {
           <div className="preview-content">
             {!config.enabled ? (
               <div className="preview-disabled">
-                <span className="preview-disabled-icon">🔒</span>
+                <span className="preview-disabled-icon"><Icon name="lock" size={48} /></span>
                 <p>Enable embed to see the preview and get your embed code</p>
               </div>
             ) : previewTab === 'preview' ? (
@@ -336,7 +337,7 @@ function Embed(): React.ReactElement {
 
           {config.enabled && (
             <div className="embed-code-section">
-              <h4>📋 Quick Copy</h4>
+              <h4><Icon name="copy" size={16} /> Quick Copy</h4>
               <p style={{ fontSize: '0.85rem', color: 'var(--color-textSecondary)', marginBottom: '12px' }}>
                 Paste this code into your website's HTML where you want the roadmap to appear.
               </p>

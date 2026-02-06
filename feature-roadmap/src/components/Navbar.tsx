@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { User } from '../types/theme';
+import Icon from './Icon';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -29,7 +30,9 @@ function Navbar({ user, onLogout, onMenuToggle, isMobileMenuOpen }: NavbarProps)
           {theme.logos.main ? (
             <img src={theme.logos.main} alt="Logo" className="brand-logo" />
           ) : (
-            <span className="brand-icon">🚀</span>
+            <span className="brand-icon">
+              <Icon name="rocket" size={24} color="var(--color-primary)" />
+            </span>
           )}
           {theme.logos.showBrandName && (
             <span className="brand-text">{theme.logos.brandName}</span>

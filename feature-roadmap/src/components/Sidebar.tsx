@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { User } from '../types/theme';
+import Icon, { IconName } from './Icon';
 import './Sidebar.css';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
@@ -13,7 +14,7 @@ interface SidebarProps {
 
 interface NavItemProps {
   to: string;
-  icon: string;
+  icon: IconName;
   label: string;
   collapsed: boolean;
   onClick?: () => void;
@@ -27,7 +28,9 @@ function NavItem({ to, icon, label, collapsed, onClick }: NavItemProps): React.R
       title={collapsed ? label : undefined}
       onClick={onClick}
     >
-      <span className="nav-icon">{icon}</span>
+      <span className="nav-icon">
+        <Icon name={icon} size={20} />
+      </span>
       <span className="nav-label">{label}</span>
     </NavLink>
   );
@@ -83,18 +86,18 @@ function Sidebar({ user, isMobileOpen, onMobileClose }: SidebarProps): React.Rea
         <nav className="sidebar-nav">
           <div className="nav-section">
             <h3 className="nav-title">Menu</h3>
-            <NavItem to="/" icon="💡" label="Suggestions" collapsed={collapsed} onClick={handleNavClick} />
-            <NavItem to="/roadmap" icon="🗺️" label="Roadmap" collapsed={collapsed} onClick={handleNavClick} />
+            <NavItem to="/" icon="lightbulb" label="Suggestions" collapsed={collapsed} onClick={handleNavClick} />
+            <NavItem to="/roadmap" icon="map" label="Roadmap" collapsed={collapsed} onClick={handleNavClick} />
           </div>
 
           {user.role === 'admin' && (
             <div className="nav-section">
               <h3 className="nav-title">Admin</h3>
-              <NavItem to="/admin/categories" icon="🏷️" label="Categories" collapsed={collapsed} onClick={handleNavClick} />
-              <NavItem to="/admin/users" icon="👥" label="Users" collapsed={collapsed} onClick={handleNavClick} />
-              <NavItem to="/admin/theme" icon="🎨" label="Theme" collapsed={collapsed} onClick={handleNavClick} />
-              <NavItem to="/admin/integrations" icon="🔗" label="Integrations" collapsed={collapsed} onClick={handleNavClick} />
-              <NavItem to="/admin/embed" icon="📦" label="Embed" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/admin/categories" icon="tags" label="Categories" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/admin/users" icon="users" label="Users" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/admin/theme" icon="palette" label="Theme" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/admin/integrations" icon="link" label="Integrations" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/admin/embed" icon="code" label="Embed" collapsed={collapsed} onClick={handleNavClick} />
             </div>
           )}
         </nav>
@@ -104,7 +107,7 @@ function Sidebar({ user, isMobileOpen, onMobileClose }: SidebarProps): React.Rea
           onClick={toggleCollapsed}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <span className="toggle-icon">{collapsed ? '»' : '«'}</span>
+          <Icon name={collapsed ? 'chevron-right' : 'chevron-left'} size={18} />
         </button>
       </aside>
     </>

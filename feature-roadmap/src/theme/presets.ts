@@ -13,6 +13,7 @@ export const lightPreset: Theme = {
     error: '#ef4444',
     border: '#e1e5eb',
     hover: '#f0f2f5',
+    icon: '#6b7280',
   },
   typography: {
     fontFamily: 'Inter',
@@ -45,6 +46,7 @@ export const darkPreset: Theme = {
     error: '#f87171',
     border: '#2d3748',
     hover: '#2a2a4a',
+    icon: '#9ca3af',
   },
   typography: {
     fontFamily: 'Inter',

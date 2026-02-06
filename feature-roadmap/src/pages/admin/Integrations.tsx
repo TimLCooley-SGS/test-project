@@ -10,6 +10,7 @@ import {
   getIntegrationsByCategory,
   getIntegrationMeta,
 } from '../../integrations/presets';
+import Icon, { IconName } from '../../components/Icon';
 import './Integrations.css';
 
 type ViewMode = 'configured' | 'add';
@@ -175,7 +176,7 @@ function Integrations(): React.ReactElement {
         <>
           {integrations.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon">🔗</div>
+              <div className="empty-state-icon"><Icon name="link" size={48} /></div>
               <h3>No integrations configured</h3>
               <p>Add an integration to push suggestions to external tools</p>
               <button className="form-btn primary" onClick={() => setViewMode('add')}>
@@ -188,7 +189,7 @@ function Integrations(): React.ReactElement {
                 const meta = getIntegrationMeta(integration.type);
                 return (
                   <div key={integration.id} className="integration-item">
-                    <div className="integration-icon">{meta?.icon || '🔗'}</div>
+                    <div className="integration-icon"><Icon name={(meta?.icon || 'link') as IconName} size={24} /></div>
                     <div className="integration-info">
                       <div className="integration-name">{integration.name}</div>
                       <div className="integration-type">{meta?.name || integration.type}</div>
@@ -239,7 +240,7 @@ function Integrations(): React.ReactElement {
                           className={`preset-card ${selectedType === preset.type ? 'selected' : ''}`}
                           onClick={() => handleSelectType(preset.type)}
                         >
-                          <div className="preset-card-icon">{preset.icon}</div>
+                          <div className="preset-card-icon"><Icon name={preset.icon as IconName} size={24} /></div>
                           <div className="preset-card-name">{preset.name}</div>
                           <div className="preset-card-desc">{preset.description}</div>
                         </div>
@@ -252,7 +253,7 @@ function Integrations(): React.ReactElement {
           ) : (
             <div className="config-form">
               <h3>
-                <span>{selectedMeta?.icon}</span>
+                <span><Icon name={(selectedMeta?.icon || 'link') as IconName} size={20} /></span>
                 {editingId ? 'Edit' : 'Configure'} {selectedMeta?.name}
               </h3>
 
@@ -283,7 +284,7 @@ function Integrations(): React.ReactElement {
 
               {testResult && (
                 <div className={`test-result ${testResult.success ? 'success' : 'error'}`}>
-                  {testResult.success ? '✓' : '✗'} {testResult.message}
+                  <Icon name={testResult.success ? 'check' : 'x'} size={14} /> {testResult.message}
                 </div>
               )}
 

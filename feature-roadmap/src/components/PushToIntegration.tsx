@@ -4,6 +4,7 @@ import { Suggestion } from '../types/theme';
 import { SuggestionPush } from '../types/integrations';
 import { getIntegrationMeta } from '../integrations/presets';
 import { getCurrentUser } from '../storage';
+import Icon, { IconName } from './Icon';
 import './PushToIntegration.css';
 
 interface PushToIntegrationProps {
@@ -78,7 +79,7 @@ function PushToIntegration({ suggestion }: PushToIntegrationProps): React.ReactE
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading !== null}
       >
-        <span>🔗</span>
+        <span><Icon name="link" size={14} /></span>
         <span>Push to...</span>
       </button>
 
@@ -109,7 +110,7 @@ function PushToIntegration({ suggestion }: PushToIntegrationProps): React.ReactE
                 onClick={() => !alreadyPushed && handlePush(integration.id)}
                 disabled={alreadyPushed}
               >
-                <span className="push-dropdown-icon">{meta?.icon || '🔗'}</span>
+                <span className="push-dropdown-icon"><Icon name={(meta?.icon || 'link') as IconName} size={16} /></span>
                 <span className="push-dropdown-name">{integration.name}</span>
                 {alreadyPushed && push && (
                   <a
@@ -142,7 +143,7 @@ function PushToIntegration({ suggestion }: PushToIntegrationProps): React.ReactE
                 className="pushed-link"
                 title={`View in ${integration?.name || push.integrationType}`}
               >
-                <span className="pushed-link-icon">{meta?.icon || '🔗'}</span>
+                <span className="pushed-link-icon"><Icon name={(meta?.icon || 'link') as IconName} size={14} /></span>
                 <span>{push.externalId}</span>
               </a>
             );

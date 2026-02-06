@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getSuggestions } from '../storage';
 import { Suggestion } from '../types/theme';
 import RoadmapMonth from '../components/RoadmapMonth';
+import Icon from '../components/Icon';
 import './Roadmap.css';
 
 type MonthStatus = 'past' | 'current' | 'future';
@@ -153,7 +154,7 @@ function Roadmap(): React.ReactElement {
 
       {displayMonths.length === 0 ? (
         <div className="empty-state">
-          <span className="empty-icon">🗺️</span>
+          <span className="empty-icon"><Icon name="map" size={48} /></span>
           {searchTerm ? (
             <>
               <p>No items match your search</p>

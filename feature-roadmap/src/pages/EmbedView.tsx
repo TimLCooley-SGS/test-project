@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { getSuggestions, getCategories, getEmbedConfig, updateSuggestion, addSuggestion, generateId } from '../storage';
 import { Suggestion } from '../types/theme';
 import { EmbedView as EmbedViewType } from '../types/embed';
+import Icon from '../components/Icon';
 import './EmbedView.css';
 
 const statusColors: Record<string, string> = {
@@ -274,7 +275,7 @@ function EmbedView(): React.ReactElement {
           <div className="embed-suggestions">
             {filteredSuggestions.length === 0 ? (
               <div className="embed-empty">
-                <span className="embed-empty-icon">💡</span>
+                <span className="embed-empty-icon"><Icon name="lightbulb" size={48} /></span>
                 <p>No suggestions yet</p>
               </div>
             ) : (
@@ -329,7 +330,7 @@ function EmbedView(): React.ReactElement {
         <div className="embed-roadmap">
           {roadmapMonths.length === 0 ? (
             <div className="embed-empty">
-              <span className="embed-empty-icon">🗺️</span>
+              <span className="embed-empty-icon"><Icon name="map" size={48} /></span>
               <p>No scheduled items yet</p>
             </div>
           ) : (
