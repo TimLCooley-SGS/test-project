@@ -168,14 +168,14 @@ function Theme(): React.ReactElement {
                     />
                   </div>
                   <div className="toggle-input">
-                    <label className="toggle-label">
+                    <span className="toggle-text">Show Brand Name</span>
+                    <label className="toggle-switch">
                       <input
                         type="checkbox"
                         checked={theme.logos.showBrandName}
                         onChange={(e) => handleLogoChange('showBrandName', e.target.checked)}
                       />
                       <span className="toggle-slider"></span>
-                      Show Brand Name
                     </label>
                   </div>
                 </div>
