@@ -70,13 +70,25 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
+// Deep merge saved theme with defaults to ensure new properties are included
+function mergeWithDefaults(saved: Partial<Theme>): Theme {
+  return {
+    colors: { ...defaultTheme.colors, ...saved.colors },
+    typography: { ...defaultTheme.typography, ...saved.typography },
+    spacing: { ...defaultTheme.spacing, ...saved.spacing },
+    logos: { ...defaultTheme.logos, ...saved.logos },
+  };
+}
+
 export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElement {
   const [theme, setTheme] = useState<Theme>(() => {
     // Load from localStorage or use default
     const saved = localStorage.getItem(THEME_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved) as Theme;
+        const parsed = JSON.parse(saved) as Partial<Theme>;
+        // Merge with defaults to include any new properties
+        return mergeWithDefaults(parsed);
       } catch (e) {
         console.error('Failed to parse saved theme:', e);
       }
