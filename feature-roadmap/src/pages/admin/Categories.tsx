@@ -64,8 +64,10 @@ function Categories(): React.ReactElement {
   return (
     <div className="categories-page">
       <div className="page-header">
-        <h1>Manage Categories</h1>
-        <p>Add, edit, or remove categories for suggestions</p>
+        <div className="header-content">
+          <h1>Manage Categories</h1>
+          <p>Add, edit, or remove categories for suggestions</p>
+        </div>
       </div>
 
       <form className="add-form" onSubmit={handleAdd}>

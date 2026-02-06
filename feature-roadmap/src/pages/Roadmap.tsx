@@ -51,8 +51,10 @@ function Roadmap(): React.ReactElement {
   return (
     <div className="roadmap-page">
       <div className="page-header">
-        <h1>Product Roadmap</h1>
-        <p>See what's planned and track our progress</p>
+        <div className="header-content">
+          <h1>Product Roadmap</h1>
+          <p>See what's planned and track our progress</p>
+        </div>
       </div>
 
       <div className="roadmap-legend">

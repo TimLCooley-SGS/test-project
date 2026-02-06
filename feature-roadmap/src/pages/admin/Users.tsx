@@ -28,8 +28,10 @@ function Users(): React.ReactElement {
   return (
     <div className="users-page">
       <div className="page-header">
-        <h1>Manage Users</h1>
-        <p>View users and manage their roles</p>
+        <div className="header-content">
+          <h1>Manage Users</h1>
+          <p>View users and manage their roles</p>
+        </div>
       </div>
 
       <div className="search-box">
