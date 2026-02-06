@@ -19,10 +19,24 @@ import './App.css';
 function App(): React.ReactElement {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   // Check if we're on the embed route
   const isEmbedRoute = location.pathname === '/embed';
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  const toggleMobileMenu = (): void => {
+    setIsMobileMenuOpen(prev => !prev);
+  };
+
+  const closeMobileMenu = (): void => {
+    setIsMobileMenuOpen(false);
+  };
 
   useEffect(() => {
     // Initialize localStorage with default data
@@ -73,9 +87,18 @@ function App(): React.ReactElement {
   return (
     <IntegrationsProvider userId={user.id}>
       <div className="app">
-        <Navbar user={user} onLogout={handleLogout} />
+        <Navbar
+          user={user}
+          onLogout={handleLogout}
+          onMenuToggle={toggleMobileMenu}
+          isMobileMenuOpen={isMobileMenuOpen}
+        />
         <div className="app-container">
-          <Sidebar user={user} />
+          <Sidebar
+            user={user}
+            isMobileOpen={isMobileMenuOpen}
+            onMobileClose={closeMobileMenu}
+          />
           <main className="main-content">
             <Routes>
               <Route path="/" element={<Home user={user} />} />
