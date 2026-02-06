@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Suggestion, User } from '../types/theme';
 import PushToIntegration from './PushToIntegration';
 import './SuggestionCard.css';
@@ -10,6 +10,8 @@ interface SuggestionCardProps {
   onShare: (suggestion: Suggestion) => void;
   onStatusChange: (id: string, status: string) => void;
   onSprintChange: (id: string, sprint: string) => void;
+  onRequirementsChange: (id: string, requirements: string) => void;
+  onJiraSync: (id: string) => void;
 }
 
 const statusColors: Record<string, string> = {
@@ -28,9 +30,14 @@ function SuggestionCard({
   onShare,
   onStatusChange,
   onSprintChange,
+  onRequirementsChange,
+  onJiraSync,
 }: SuggestionCardProps): React.ReactElement {
   const hasVoted = suggestion.votedBy.includes(user.id);
   const isAdmin = user.role === 'admin';
+  const [showRequirements, setShowRequirements] = useState(!!suggestion.requirements);
+  const [requirements, setRequirements] = useState(suggestion.requirements || '');
+  const [jiraSuccess, setJiraSuccess] = useState(false);
 
   // Generate sprint options (current month + next 6 months)
   const getSprintOptions = (): string[] => {
@@ -43,6 +50,17 @@ function SuggestionCard({
       options.push(`${monthName} ${year}`);
     }
     return options;
+  };
+
+  const handleRequirementsChange = (value: string): void => {
+    setRequirements(value);
+    onRequirementsChange(suggestion.id, value);
+  };
+
+  const handleAddToJira = (): void => {
+    onJiraSync(suggestion.id);
+    setJiraSuccess(true);
+    setTimeout(() => setJiraSuccess(false), 3000);
   };
 
   return (
@@ -71,6 +89,9 @@ function SuggestionCard({
             </span>
             {suggestion.sprint && (
               <span className="sprint-badge">📅 {suggestion.sprint}</span>
+            )}
+            {suggestion.jiraSynced && (
+              <span className="jira-badge">🔷 In Jira</span>
             )}
           </div>
         </div>
@@ -116,7 +137,59 @@ function SuggestionCard({
               </select>
             </div>
 
+            <button
+              className={`requirements-btn ${showRequirements ? 'active' : ''}`}
+              onClick={() => setShowRequirements(!showRequirements)}
+            >
+              📝 {suggestion.requirements ? 'Edit Requirements' : 'Create Requirements'}
+            </button>
+
             <PushToIntegration suggestion={suggestion} />
+          </div>
+        )}
+
+        {isAdmin && showRequirements && (
+          <div className="requirements-section">
+            <div className="requirements-header">
+              <h4>Requirements</h4>
+              {suggestion.jiraSynced && suggestion.jiraSyncedAt && (
+                <span className="synced-info">
+                  Synced to Jira on {new Date(suggestion.jiraSyncedAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+            <textarea
+              className="requirements-input"
+              value={requirements}
+              onChange={(e) => handleRequirementsChange(e.target.value)}
+              placeholder="Define the requirements for this feature...
+
+Example:
+- User Story: As a user, I want to...
+- Acceptance Criteria:
+  1. Given... When... Then...
+  2. Given... When... Then...
+- Technical Notes:
+  - API endpoints needed
+  - Database changes
+  - UI components"
+              rows={8}
+            />
+            <div className="requirements-actions">
+              {jiraSuccess ? (
+                <div className="jira-success">
+                  ✓ Successfully added to Jira!
+                </div>
+              ) : (
+                <button
+                  className="jira-btn"
+                  onClick={handleAddToJira}
+                  disabled={!requirements.trim() || suggestion.jiraSynced}
+                >
+                  🔷 {suggestion.jiraSynced ? 'Already in Jira' : 'Add to Jira'}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

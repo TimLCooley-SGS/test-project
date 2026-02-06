@@ -75,4 +75,7 @@ export interface Suggestion {
   votedBy: string[];
   createdBy: string;
   createdAt: string;
+  requirements?: string;
+  jiraSynced?: boolean;
+  jiraSyncedAt?: string;
 }

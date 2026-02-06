@@ -83,6 +83,19 @@ function Home({ user }: HomeProps): React.ReactElement {
     alert('Link copied to clipboard!');
   };
 
+  const handleRequirementsChange = (suggestionId: string, requirements: string): void => {
+    const updated = updateSuggestion(suggestionId, { requirements });
+    setSuggestions(updated);
+  };
+
+  const handleJiraSync = (suggestionId: string): void => {
+    const updated = updateSuggestion(suggestionId, {
+      jiraSynced: true,
+      jiraSyncedAt: new Date().toISOString(),
+    });
+    setSuggestions(updated);
+  };
+
   // Filter and sort suggestions
   const filteredSuggestions = suggestions
     .filter(s => filterCategory === 'all' || s.category === filterCategory)
@@ -163,6 +176,8 @@ function Home({ user }: HomeProps): React.ReactElement {
               onShare={handleShare}
               onStatusChange={handleStatusChange}
               onSprintChange={handleSprintChange}
+              onRequirementsChange={handleRequirementsChange}
+              onJiraSync={handleJiraSync}
             />
           ))
         )}
