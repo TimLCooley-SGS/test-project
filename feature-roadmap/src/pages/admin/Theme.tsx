@@ -40,7 +40,7 @@ function Theme(): React.ReactElement {
     updateTheme({ spacing: { [key]: value } });
   };
 
-  const handleLogoChange = (key: 'main' | 'favicon', value: string | null): void => {
+  const handleLogoChange = (key: keyof typeof theme.logos, value: string | boolean | null): void => {
     updateTheme({ logos: { [key]: value } });
   };
 
@@ -156,6 +156,28 @@ function Theme(): React.ReactElement {
                   value={theme.logos.favicon}
                   onChange={(val) => handleLogoChange('favicon', val)}
                 />
+                <div className="brand-name-section">
+                  <div className="text-input">
+                    <label>Brand Name</label>
+                    <input
+                      type="text"
+                      value={theme.logos.brandName}
+                      onChange={(e) => handleLogoChange('brandName', e.target.value)}
+                      placeholder="Enter company or brand name"
+                    />
+                  </div>
+                  <div className="toggle-input">
+                    <label className="toggle-label">
+                      <input
+                        type="checkbox"
+                        checked={theme.logos.showBrandName}
+                        onChange={(e) => handleLogoChange('showBrandName', e.target.checked)}
+                      />
+                      <span className="toggle-slider"></span>
+                      Show Brand Name
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
 

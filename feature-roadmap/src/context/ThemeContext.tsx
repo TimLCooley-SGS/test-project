@@ -7,6 +7,22 @@ const THEME_STORAGE_KEY = 'app_theme';
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
+// Update favicon dynamically
+function updateFavicon(faviconUrl: string | null): void {
+  const existingLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement | null;
+
+  if (faviconUrl) {
+    if (existingLink) {
+      existingLink.href = faviconUrl;
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = faviconUrl;
+      document.head.appendChild(link);
+    }
+  }
+}
+
 // Inject CSS variables into :root
 function applyThemeToDOM(theme: Theme): void {
   const root = document.documentElement;
@@ -71,6 +87,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Apply theme to DOM whenever it changes
   useEffect(() => {
     applyThemeToDOM(theme);
+    updateFavicon(theme.logos.favicon);
     localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
   }, [theme]);
 

@@ -29,6 +29,8 @@ export interface ThemeSpacing {
 export interface ThemeLogos {
   main: string | null;
   favicon: string | null;
+  brandName: string;
+  showBrandName: boolean;
 }
 
 export interface Theme {

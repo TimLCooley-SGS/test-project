@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { User } from '../types/theme';
 import './Navbar.css';
 
@@ -8,11 +9,19 @@ interface NavbarProps {
 }
 
 function Navbar({ user, onLogout }: NavbarProps): React.ReactElement {
+  const { theme } = useTheme();
+
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <span className="brand-icon">🚀</span>
-        <span className="brand-text">Feature Roadmap</span>
+        {theme.logos.main ? (
+          <img src={theme.logos.main} alt="Logo" className="brand-logo" />
+        ) : (
+          <span className="brand-icon">🚀</span>
+        )}
+        {theme.logos.showBrandName && (
+          <span className="brand-text">{theme.logos.brandName}</span>
+        )}
       </div>
       <div className="navbar-user">
         <div className="user-info">

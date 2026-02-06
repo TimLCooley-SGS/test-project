@@ -28,6 +28,8 @@ const defaultTheme: Theme = {
   logos: {
     main: null,
     favicon: null,
+    brandName: 'Feature Roadmap',
+    showBrandName: true,
   },
 };
 

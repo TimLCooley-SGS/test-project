@@ -28,6 +28,8 @@ export const lightPreset: Theme = {
   logos: {
     main: null,
     favicon: null,
+    brandName: 'Feature Roadmap',
+    showBrandName: true,
   },
 };
 
@@ -58,5 +60,7 @@ export const darkPreset: Theme = {
   logos: {
     main: null,
     favicon: null,
+    brandName: 'Feature Roadmap',
+    showBrandName: true,
   },
 };
