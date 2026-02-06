@@ -74,49 +74,70 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .category-badge {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
   background: var(--color-hover);
   border-radius: 20px;
   font-size: 0.8rem;
   color: var(--color-textSecondary);
+  line-height: 1.2;
 }
 
 .status-badge {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
   color: white;
+  line-height: 1.2;
 }
 
 .sprint-badge {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 12px;
   background: #fef3c7;
   border-radius: 20px;
   font-size: 0.8rem;
   color: #92400e;
+  line-height: 1.2;
 }
 
 .jira-badge {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 12px;
   background: #deebff;
   border-radius: 20px;
   font-size: 0.8rem;
   color: #0052cc;
+  line-height: 1.2;
 }
 
 .impact-badge {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 12px;
   background: linear-gradient(135deg, #fef3c7, #fde68a);
   border-radius: 20px;
   font-size: 0.8rem;
   color: #92400e;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  line-height: 1.2;
 }
 
 .card-description {
