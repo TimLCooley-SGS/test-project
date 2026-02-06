@@ -1,4 +1,5 @@
 require('dotenv').config({ path: '../.env' });
+require('dotenv').config(); // fallback to .env in cwd (Vercel)
 
 const express = require('express');
 const cors = require('cors');
@@ -57,8 +58,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`API server running on http://localhost:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Only listen when run directly (not when imported by Vercel serverless)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`API server running on http://localhost:${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
+
+module.exports = app;

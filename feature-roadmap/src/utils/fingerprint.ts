@@ -2,9 +2,9 @@ export async function generateFingerprint(): Promise<string> {
   const components = [
     navigator.userAgent,
     navigator.language,
-    screen.width.toString(),
-    screen.height.toString(),
-    screen.colorDepth.toString(),
+    window.screen.width.toString(),
+    window.screen.height.toString(),
+    window.screen.colorDepth.toString(),
     new Date().getTimezoneOffset().toString(),
     (navigator.hardwareConcurrency || 0).toString(),
     navigator.platform,
