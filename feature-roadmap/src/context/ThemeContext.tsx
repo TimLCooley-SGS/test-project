@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import defaultTheme from '../theme/defaultTheme';
 import { lightPreset, darkPreset } from '../theme/presets';
+import { Theme, ThemeContextType, DeepPartial } from '../types/theme';
 
 const THEME_STORAGE_KEY = 'app_theme';
 
-const ThemeContext = createContext(null);
+const ThemeContext = createContext<ThemeContextType | null>(null);
 
 // Inject CSS variables into :root
-function applyThemeToDOM(theme) {
+function applyThemeToDOM(theme: Theme): void {
   const root = document.documentElement;
 
   // Colors
@@ -36,7 +37,7 @@ function applyThemeToDOM(theme) {
 }
 
 // Load Google Font dynamically
-function loadGoogleFont(fontName) {
+function loadGoogleFont(fontName: string): void {
   if (!fontName || fontName === 'system-ui') return;
 
   const linkId = `google-font-${fontName.replace(/\s+/g, '-').toLowerCase()}`;
@@ -49,13 +50,17 @@ function loadGoogleFont(fontName) {
   document.head.appendChild(link);
 }
 
-export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
+export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElement {
+  const [theme, setTheme] = useState<Theme>(() => {
     // Load from localStorage or use default
     const saved = localStorage.getItem(THEME_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as Theme;
       } catch (e) {
         console.error('Failed to parse saved theme:', e);
       }
@@ -69,14 +74,13 @@ export function ThemeProvider({ children }) {
     localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
   }, [theme]);
 
-  const updateTheme = useCallback((updates) => {
+  const updateTheme = useCallback((updates: DeepPartial<Theme>) => {
     setTheme((prev) => {
       const newTheme = { ...prev };
-      Object.keys(updates).forEach((section) => {
-        if (typeof updates[section] === 'object' && updates[section] !== null) {
-          newTheme[section] = { ...prev[section], ...updates[section] };
-        } else {
-          newTheme[section] = updates[section];
+      (Object.keys(updates) as Array<keyof Theme>).forEach((section) => {
+        const update = updates[section];
+        if (typeof update === 'object' && update !== null) {
+          (newTheme[section] as object) = { ...prev[section], ...update };
         }
       });
       return newTheme;
@@ -87,11 +91,11 @@ export function ThemeProvider({ children }) {
     setTheme(defaultTheme);
   }, []);
 
-  const loadTheme = useCallback((newTheme) => {
+  const loadTheme = useCallback((newTheme: Theme) => {
     setTheme(newTheme);
   }, []);
 
-  const applyPreset = useCallback((presetName) => {
+  const applyPreset = useCallback((presetName: 'light' | 'dark') => {
     if (presetName === 'light') {
       setTheme((prev) => ({ ...lightPreset, logos: prev.logos }));
     } else if (presetName === 'dark') {
@@ -112,12 +116,12 @@ export function ThemeProvider({ children }) {
     URL.revokeObjectURL(url);
   }, [theme]);
 
-  const importTheme = useCallback((file) => {
+  const importTheme = useCallback((file: File): Promise<Theme> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const imported = JSON.parse(e.target.result);
+          const imported = JSON.parse(e.target?.result as string) as Theme;
           // Validate structure
           if (
             imported.colors &&
@@ -138,7 +142,7 @@ export function ThemeProvider({ children }) {
     });
   }, []);
 
-  const value = {
+  const value: ThemeContextType = {
     theme,
     updateTheme,
     resetTheme,
@@ -155,7 +159,7 @@ export function ThemeProvider({ children }) {
   );
 }
 
-export function useTheme() {
+export function useTheme(): ThemeContextType {
   const context = useContext(ThemeContext);
   if (!context) {
     throw new Error('useTheme must be used within a ThemeProvider');

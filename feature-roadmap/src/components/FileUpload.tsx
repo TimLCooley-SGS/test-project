@@ -1,20 +1,27 @@
 import React, { useRef } from 'react';
 
-function FileUpload({ label, value, onChange, accept = 'image/*' }) {
-  const inputRef = useRef(null);
+interface FileUploadProps {
+  label: string;
+  value: string | null;
+  onChange: (value: string | null) => void;
+  accept?: string;
+}
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+function FileUpload({ label, value, onChange, accept = 'image/*' }: FileUploadProps): React.ReactElement {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        onChange(event.target.result);
+        onChange(event.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleClear = () => {
+  const handleClear = (): void => {
     onChange(null);
     if (inputRef.current) {
       inputRef.current.value = '';

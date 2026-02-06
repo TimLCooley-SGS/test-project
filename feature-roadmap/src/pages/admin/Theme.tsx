@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import { ThemeColors } from '../../types/theme';
 import ColorPicker from '../../components/ColorPicker';
 import FontPicker from '../../components/FontPicker';
 import FileUpload from '../../components/FileUpload';
 import './Theme.css';
 
-const TABS = ['Colors', 'Typography', 'Logos', 'Spacing'];
+const TABS = ['Colors', 'Typography', 'Logos', 'Spacing'] as const;
+type Tab = typeof TABS[number];
 
-const COLOR_LABELS = {
+const COLOR_LABELS: Record<keyof ThemeColors, string> = {
   primary: 'Primary',
   secondary: 'Secondary',
   background: 'Background',
@@ -20,36 +22,36 @@ const COLOR_LABELS = {
   hover: 'Hover',
 };
 
-function Theme() {
+function Theme(): React.ReactElement {
   const { theme, updateTheme, resetTheme, applyPreset, exportTheme, importTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState('Colors');
+  const [activeTab, setActiveTab] = useState<Tab>('Colors');
   const [importError, setImportError] = useState('');
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleColorChange = (key, value) => {
+  const handleColorChange = (key: keyof ThemeColors, value: string): void => {
     updateTheme({ colors: { [key]: value } });
   };
 
-  const handleTypographyChange = (key, value) => {
+  const handleTypographyChange = (key: string, value: string): void => {
     updateTheme({ typography: { [key]: value } });
   };
 
-  const handleSpacingChange = (key, value) => {
+  const handleSpacingChange = (key: string, value: string): void => {
     updateTheme({ spacing: { [key]: value } });
   };
 
-  const handleLogoChange = (key, value) => {
+  const handleLogoChange = (key: 'main' | 'favicon', value: string | null): void => {
     updateTheme({ logos: { [key]: value } });
   };
 
-  const handleImport = async (e) => {
-    const file = e.target.files[0];
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = e.target.files?.[0];
     if (file) {
       try {
         await importTheme(file);
         setImportError('');
       } catch (err) {
-        setImportError('Invalid theme file: ' + err.message);
+        setImportError('Invalid theme file: ' + (err as Error).message);
       }
       e.target.value = '';
     }
@@ -93,10 +95,10 @@ function Theme() {
             {activeTab === 'Colors' && (
               <div className="colors-tab">
                 <div className="color-grid">
-                  {Object.entries(theme.colors).map(([key, value]) => (
+                  {(Object.entries(theme.colors) as [keyof ThemeColors, string][]).map(([key, value]) => (
                     <ColorPicker
                       key={key}
-                      label={COLOR_LABELS[key] || key}
+                      label={COLOR_LABELS[key]}
                       value={value}
                       onChange={(val) => handleColorChange(key, val)}
                     />

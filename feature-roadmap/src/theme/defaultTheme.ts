@@ -1,5 +1,7 @@
+import { Theme } from '../types/theme';
+
 // Default theme schema and values
-const defaultTheme = {
+const defaultTheme: Theme = {
   colors: {
     primary: '#4a90d9',
     secondary: '#667eea',

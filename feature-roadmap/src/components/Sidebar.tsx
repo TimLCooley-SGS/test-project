@@ -1,8 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { User } from '../types/theme';
 import './Sidebar.css';
 
-function Sidebar({ user }) {
+interface SidebarProps {
+  user: User;
+}
+
+function Sidebar({ user }: SidebarProps): React.ReactElement {
   return (
     <aside className="sidebar">
       <nav className="sidebar-nav">

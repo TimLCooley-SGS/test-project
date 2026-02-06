@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { initializeStorage, getCurrentUser, setCurrentUser, clearCurrentUser, getUsers } from './storage';
+import { User } from './types/theme';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Roadmap from './pages/Roadmap';
@@ -11,8 +12,8 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import './App.css';
 
-function App() {
-  const [user, setUser] = useState(null);
+function App(): React.ReactElement {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ function App() {
     setLoading(false);
   }, []);
 
-  const handleLogin = (role) => {
+  const handleLogin = (role: 'admin' | 'user'): void => {
     const users = getUsers();
     const selectedUser = role === 'admin'
       ? users.find(u => u.role === 'admin')
@@ -39,7 +40,7 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     clearCurrentUser();
     setUser(null);
   };

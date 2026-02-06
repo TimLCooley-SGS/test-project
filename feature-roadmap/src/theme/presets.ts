@@ -1,5 +1,7 @@
+import { Theme } from '../types/theme';
+
 // Light and Dark theme presets
-export const lightPreset = {
+export const lightPreset: Theme = {
   colors: {
     primary: '#4a90d9',
     secondary: '#667eea',
@@ -29,7 +31,7 @@ export const lightPreset = {
   },
 };
 
-export const darkPreset = {
+export const darkPreset: Theme = {
   colors: {
     primary: '#60a5fa',
     secondary: '#818cf8',

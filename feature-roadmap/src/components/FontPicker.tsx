@@ -1,7 +1,7 @@
 import React from 'react';
 
 // Popular Google Fonts list
-const POPULAR_FONTS = [
+const POPULAR_FONTS: string[] = [
   'Inter',
   'Roboto',
   'Open Sans',
@@ -24,7 +24,13 @@ const POPULAR_FONTS = [
   'Josefin Sans',
 ];
 
-function FontPicker({ label, value, onChange }) {
+interface FontPickerProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function FontPicker({ label, value, onChange }: FontPickerProps): React.ReactElement {
   return (
     <div className="font-picker">
       <label className="font-picker-label">{label}</label>

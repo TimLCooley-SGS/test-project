@@ -1,6 +1,12 @@
 import React from 'react';
 
-function ColorPicker({ label, value, onChange }) {
+interface ColorPickerProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function ColorPicker({ label, value, onChange }: ColorPickerProps): React.ReactElement {
   return (
     <div className="color-picker">
       <label className="color-picker-label">{label}</label>
