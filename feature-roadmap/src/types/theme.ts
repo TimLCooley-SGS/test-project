@@ -98,6 +98,7 @@ export interface Suggestion {
   votes: number;
   votedBy: string[];
   createdBy: string;
+  createdByName?: string;
   createdAt: string;
   requirements?: string;
   jiraSynced?: boolean;

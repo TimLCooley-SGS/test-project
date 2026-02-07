@@ -109,7 +109,7 @@ function SuggestionCard({
 
         <div className="card-footer">
           <span className="card-date">
-            Added {new Date(suggestion.createdAt).toLocaleDateString()}
+            Added {new Date(suggestion.createdAt).toLocaleDateString()}{suggestion.createdByName ? ` by ${suggestion.createdByName}` : ''}
           </span>
 
           <div className="card-actions">
