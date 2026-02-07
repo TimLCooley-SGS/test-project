@@ -25,7 +25,7 @@ interface PricingProps {
 
 function Pricing({ onGetStarted }: PricingProps): React.ReactElement {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,14 +48,14 @@ function Pricing({ onGetStarted }: PricingProps): React.ReactElement {
 
         <div className="pricing-interval-toggle">
           <button
-            className={interval === 'monthly' ? 'active' : ''}
-            onClick={() => setInterval('monthly')}
+            className={billingInterval === 'monthly' ? 'active' : ''}
+            onClick={() => setBillingInterval('monthly')}
           >
             Monthly
           </button>
           <button
-            className={interval === 'yearly' ? 'active' : ''}
-            onClick={() => setInterval('yearly')}
+            className={billingInterval === 'yearly' ? 'active' : ''}
+            onClick={() => setBillingInterval('yearly')}
           >
             Yearly (save ~17%)
           </button>
@@ -69,7 +69,7 @@ function Pricing({ onGetStarted }: PricingProps): React.ReactElement {
           const isEnterprise = plan.slug === 'enterprise';
           const isFree = plan.price_monthly === 0 && !isEnterprise;
           const isFeatured = plan.slug === 'pro';
-          const price = interval === 'yearly' ? plan.price_yearly : plan.price_monthly;
+          const price = billingInterval === 'yearly' ? plan.price_yearly : plan.price_monthly;
 
           return (
             <div key={plan.id} className={`pricing-card${isFeatured ? ' featured' : ''}`}>
@@ -81,7 +81,7 @@ function Pricing({ onGetStarted }: PricingProps): React.ReactElement {
               <div className="pricing-amount">
                 <span className="price">{isEnterprise ? 'Custom' : formatPrice(price)}</span>
                 {!isEnterprise && !isFree && (
-                  <span className="period">/{interval === 'yearly' ? 'year' : 'month'}</span>
+                  <span className="period">/{billingInterval === 'yearly' ? 'year' : 'month'}</span>
                 )}
                 {isFree && <span className="period">/month</span>}
               </div>
