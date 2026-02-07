@@ -84,7 +84,7 @@ function Sidebar({ user, isMobileOpen, onMobileClose }: SidebarProps): React.Rea
 
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
         <nav className="sidebar-nav">
-          <div className="nav-section">
+<div className="nav-section">
             <h3 className="nav-title">Menu</h3>
             <NavItem to="/" icon="lightbulb" label="Suggestions" collapsed={collapsed} onClick={handleNavClick} />
             <NavItem to="/roadmap" icon="map" label="Roadmap" collapsed={collapsed} onClick={handleNavClick} />
@@ -98,6 +98,16 @@ function Sidebar({ user, isMobileOpen, onMobileClose }: SidebarProps): React.Rea
               <NavItem to="/admin/theme" icon="palette" label="Theme" collapsed={collapsed} onClick={handleNavClick} />
               <NavItem to="/admin/integrations" icon="link" label="Integrations" collapsed={collapsed} onClick={handleNavClick} />
               <NavItem to="/admin/embed" icon="code" label="Embed" collapsed={collapsed} onClick={handleNavClick} />
+            </div>
+          )}
+
+          {user.isSuperAdmin && (
+            <div className="nav-section">
+              <h3 className="nav-title">Platform</h3>
+              <NavItem to="/platform/organizations" icon="globe" label="Organizations" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/platform/users" icon="users" label="Users" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/platform/settings" icon="settings" label="Settings" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/platform/analytics" icon="bar-chart" label="Analytics" collapsed={collapsed} onClick={handleNavClick} />
             </div>
           )}
         </nav>

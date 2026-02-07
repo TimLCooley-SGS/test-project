@@ -1,0 +1,143 @@
+.analytics-page {
+  max-width: 1000px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: var(--font-weight-heading);
+  color: var(--color-primary);
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--color-textSecondary);
+  margin-top: 4px;
+}
+
+.analytics-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.analytics-section h2 {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 12px;
+  font-weight: var(--font-weight-heading);
+}
+
+.activity-list {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  overflow: hidden;
+}
+
+.activity-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-title {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.activity-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--color-textSecondary);
+}
+
+.activity-status {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.activity-status.status-under_review {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.activity-status.status-planned {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.activity-status.status-in_progress {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.activity-status.status-done {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.activity-org {
+  font-style: italic;
+}
+
+.activity-email {
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.empty-text {
+  padding: 24px;
+  text-align: center;
+  color: var(--color-textSecondary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .analytics-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+}

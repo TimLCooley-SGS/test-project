@@ -106,6 +106,19 @@
   color: #f59e0b;
 }
 
+.super-admin-badge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  background: #6366f1;
+  color: white;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+
 .logout-btn {
   padding: 8px 16px;
   background: var(--color-background);

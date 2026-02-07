@@ -42,7 +42,10 @@ function Navbar({ user, onLogout, onMenuToggle, isMobileMenuOpen }: NavbarProps)
       <div className="navbar-user">
         <div className="user-info">
           <span className="user-name">{user.name}</span>
-          <span className={`user-role ${user.role}`}>{user.role}</span>
+          <span className={`user-role ${user.role}`}>
+            {user.role}
+            {user.isSuperAdmin && <span className="super-admin-badge">super admin</span>}
+          </span>
         </div>
         <button onClick={onLogout} className="logout-btn">
           Logout

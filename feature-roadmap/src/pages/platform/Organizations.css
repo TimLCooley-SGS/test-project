@@ -1,0 +1,185 @@
+.platform-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.platform-page .page-header {
+  margin-bottom: var(--card-padding);
+}
+
+.platform-page .page-header h1 {
+  font-size: 1.75rem;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  font-weight: var(--font-weight-heading);
+}
+
+.platform-page .page-header p {
+  color: var(--color-textSecondary);
+  font-size: 0.95rem;
+}
+
+.platform-page .search-box {
+  position: relative;
+  margin-bottom: var(--card-padding);
+}
+
+.platform-page .search-box input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.platform-page .search-box input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.platform-page .search-box .clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-textSecondary);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.platform-page .search-box .clear-btn:hover {
+  color: var(--color-text);
+}
+
+.platform-table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  overflow-x: auto;
+}
+
+.platform-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.platform-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--color-background);
+  color: var(--color-textSecondary);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.platform-table td {
+  padding: 12px 16px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.platform-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.platform-table tbody tr:hover {
+  background: var(--color-hover);
+}
+
+.inactive-row {
+  opacity: 0.5;
+}
+
+.org-name {
+  font-weight: 500;
+}
+
+.org-slug {
+  color: var(--color-textSecondary);
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.num-cell {
+  text-align: center;
+  font-weight: 500;
+}
+
+.date-cell {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 40px 16px !important;
+  color: var(--color-textSecondary);
+}
+
+.plan-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.plan-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.status-toggle {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-toggle.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-toggle.active:hover {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.status-toggle.inactive {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.status-toggle.inactive:hover {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+@media (max-width: 768px) {
+  .platform-table {
+    font-size: 0.8rem;
+  }
+
+  .platform-table th,
+  .platform-table td {
+    padding: 8px 10px;
+  }
+}

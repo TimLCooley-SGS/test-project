@@ -34,6 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  BarChart3,
   LucideIcon,
 } from 'lucide-react';
 
@@ -73,6 +74,7 @@ const iconMap: Record<string, LucideIcon> = {
   'chevron-left': ChevronLeft,
   'chevron-right': ChevronRight,
   menu: Menu,
+  'bar-chart': BarChart3,
 };
 
 export type IconName = keyof typeof iconMap;

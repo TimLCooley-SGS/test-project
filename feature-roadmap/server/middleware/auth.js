@@ -51,6 +51,14 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+// Check if user is super admin (platform-level)
+const requireSuperAdmin = (req, res, next) => {
+  if (!req.user.is_super_admin) {
+    return res.status(403).json({ error: 'Super admin access required' });
+  }
+  next();
+};
+
 // Generate JWT token
 const generateToken = (userId, organizationId) => {
   return jwt.sign(
@@ -63,5 +71,6 @@ const generateToken = (userId, organizationId) => {
 module.exports = {
   authenticate,
   requireAdmin,
+  requireSuperAdmin,
   generateToken,
 };

@@ -71,6 +71,7 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'user';
+  isSuperAdmin?: boolean;
   customerValue?: number; // Value from CRM (e.g., ARR, deal size, tier score)
   company?: string;
   crmId?: string; // ID in external CRM system

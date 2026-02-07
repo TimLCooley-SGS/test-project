@@ -14,6 +14,10 @@ import Users from './pages/admin/Users';
 import Theme from './pages/admin/Theme';
 import Integrations from './pages/admin/Integrations';
 import Embed from './pages/admin/Embed';
+import PlatformOrganizations from './pages/platform/Organizations';
+import PlatformUsers from './pages/platform/PlatformUsers';
+import PlatformSettings from './pages/platform/Settings';
+import PlatformAnalytics from './pages/platform/Analytics';
 import ResetPassword from './pages/ResetPassword';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -146,6 +150,14 @@ function App(): React.ReactElement {
                   <Route path="/admin/theme" element={<Theme />} />
                   <Route path="/admin/integrations" element={<Integrations />} />
                   <Route path="/admin/embed" element={<Embed user={user} />} />
+                </>
+              )}
+              {user.isSuperAdmin && (
+                <>
+                  <Route path="/platform/organizations" element={<PlatformOrganizations />} />
+                  <Route path="/platform/users" element={<PlatformUsers />} />
+                  <Route path="/platform/settings" element={<PlatformSettings />} />
+                  <Route path="/platform/analytics" element={<PlatformAnalytics />} />
                 </>
               )}
               <Route path="*" element={<Navigate to="/" replace />} />

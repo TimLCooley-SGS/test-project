@@ -53,6 +53,9 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     last_login_at TIMESTAMP WITH TIME ZONE,
 
+    -- Super admin flag (platform-level, independent of org role)
+    is_super_admin BOOLEAN DEFAULT false,
+
     -- Email must be unique within an organization
     UNIQUE(organization_id, email)
 );
@@ -200,6 +203,29 @@ CREATE TABLE password_reset_tokens (
 CREATE INDEX idx_password_reset_tokens_token ON password_reset_tokens(token);
 
 -- ============================================
+-- PLATFORM SETTINGS
+-- ============================================
+CREATE TABLE platform_settings (
+    key VARCHAR(100) PRIMARY KEY,
+    value TEXT NOT NULL,
+    description VARCHAR(255),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================
+-- EMAIL TEMPLATES
+-- ============================================
+CREATE TABLE email_templates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) UNIQUE NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    html_body TEXT NOT NULL,
+    description VARCHAR(255),
+    is_active BOOLEAN DEFAULT true,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================
 -- HELPER FUNCTIONS
 -- ============================================
 
@@ -223,6 +249,12 @@ CREATE TRIGGER update_suggestions_updated_at BEFORE UPDATE ON suggestions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_integrations_updated_at BEFORE UPDATE ON integrations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_platform_settings_updated_at BEFORE UPDATE ON platform_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_email_templates_updated_at BEFORE UPDATE ON email_templates
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================

@@ -1,0 +1,74 @@
+.user-name-cell {
+  font-weight: 500;
+}
+
+.user-email-cell {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+}
+
+.org-cell {
+  font-size: 0.9rem;
+}
+
+.role-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.sa-toggle {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sa-toggle.on {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.sa-toggle.on:hover {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.sa-toggle.off {
+  background: var(--color-hover);
+  color: var(--color-textSecondary);
+}
+
+.sa-toggle.off:hover {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.delete-btn {
+  padding: 4px 12px;
+  border-radius: var(--border-radius);
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: var(--color-error);
+  color: white;
+}

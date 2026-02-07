@@ -297,3 +297,74 @@ export async function updateAdminEmbedConfig(config: any): Promise<{ config: any
     body: JSON.stringify(config),
   });
 }
+
+// --- Platform (Super Admin) API ---
+
+export async function fetchPlatformOrganizations(): Promise<any[]> {
+  return apiFetch('/platform/organizations');
+}
+
+export async function updatePlatformOrganization(
+  id: string,
+  updates: { name?: string; plan?: string; is_active?: boolean }
+): Promise<any> {
+  return apiFetch(`/platform/organizations/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function fetchPlatformUsers(): Promise<any[]> {
+  return apiFetch('/platform/users');
+}
+
+export async function updatePlatformUser(
+  id: string,
+  updates: { role?: string; is_super_admin?: boolean }
+): Promise<any> {
+  return apiFetch(`/platform/users/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function deletePlatformUser(id: string): Promise<void> {
+  await apiFetch(`/platform/users/${id}`, { method: 'DELETE' });
+}
+
+export async function fetchPlatformSettings(): Promise<any[]> {
+  return apiFetch('/platform/settings');
+}
+
+export async function updatePlatformSetting(
+  key: string,
+  value: string,
+  description?: string
+): Promise<any> {
+  return apiFetch(`/platform/settings/${key}`, {
+    method: 'PUT',
+    body: JSON.stringify({ value, description }),
+  });
+}
+
+export async function fetchEmailTemplates(): Promise<any[]> {
+  return apiFetch('/platform/email-templates');
+}
+
+export async function updateEmailTemplate(
+  id: string,
+  updates: { subject?: string; html_body?: string; is_active?: boolean }
+): Promise<any> {
+  return apiFetch(`/platform/email-templates/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function sendTestEmail(id: string): Promise<{ message: string }> {
+  return apiFetch(`/platform/email-templates/${id}/test`, { method: 'POST' });
+}
+
+export async function fetchPlatformAnalytics(): Promise<any> {
+  return apiFetch('/platform/analytics');
+}

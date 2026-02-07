@@ -162,6 +162,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        isSuperAdmin: user.is_super_admin || false,
         organizationId: user.organization_id,
         organizationName: user.organization_name,
         organizationSlug: user.organization_slug,
@@ -183,6 +184,7 @@ router.get('/me', authenticate, async (req, res) => {
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
+      isSuperAdmin: req.user.is_super_admin || false,
       organizationId: req.user.organization_id,
       organizationName: req.user.organization_name,
       organizationSlug: req.user.organization_slug,
@@ -276,17 +278,34 @@ router.post('/forgot-password', async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
-        const msg = {
-          to: email.toLowerCase(),
-          from: process.env.FROM_EMAIL,
-          subject: 'Reset Your Password - Feature Roadmap',
-          html: `
+        // Try to load email template from DB
+        let subject = 'Reset Your Password - Feature Roadmap';
+        let html = `
             <h2>Password Reset</h2>
             <p>You requested a password reset. Click the link below to set a new password:</p>
             <p><a href="${resetLink}">Reset Password</a></p>
             <p>This link expires in 1 hour.</p>
             <p>If you didn't request this, you can safely ignore this email.</p>
-          `,
+          `;
+
+        try {
+          const tplResult = await db.query(
+            "SELECT * FROM email_templates WHERE name = 'password_reset' AND is_active = true"
+          );
+          if (tplResult.rows.length > 0) {
+            const tpl = tplResult.rows[0];
+            subject = tpl.subject;
+            html = tpl.html_body.replace(/\{\{reset_link\}\}/g, resetLink);
+          }
+        } catch (tplErr) {
+          // Fall back to hardcoded template
+        }
+
+        const msg = {
+          to: email.toLowerCase(),
+          from: process.env.FROM_EMAIL,
+          subject,
+          html,
         };
 
         try {
