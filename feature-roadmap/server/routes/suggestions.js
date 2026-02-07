@@ -112,18 +112,20 @@ router.post('/', authenticate, async (req, res) => {
 
     const suggestion = result.rows[0];
 
-    // Notify org admins of new suggestion (fire-and-forget)
-    const orgName = req.user.organization_name || 'your organization';
-    const orgSlug = req.user.organization_slug;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const boardLink = `${frontendUrl}/board/${orgSlug}`;
+    // Notify org admins of new suggestion
+    // Must await before responding — Vercel freezes the Lambda after res.json()
+    try {
+      const orgName = req.user.organization_name || 'your organization';
+      const orgSlug = req.user.organization_slug;
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const boardLink = `${frontendUrl}/board/${orgSlug}`;
 
-    db.query(
-      `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
-      [req.user.organization_id]
-    ).then(adminResult => {
+      const adminResult = await db.query(
+        `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
+        [req.user.organization_id]
+      );
       if (adminResult.rows.length > 0) {
-        sendTemplatedEmail({
+        await sendTemplatedEmail({
           to: adminResult.rows.map(r => r.email),
           templateName: 'new_suggestion',
           variables: {
@@ -146,7 +148,9 @@ router.post('/', authenticate, async (req, res) => {
           `,
         });
       }
-    }).catch(err => console.error('Failed to send new_suggestion notification:', err));
+    } catch (notifyErr) {
+      console.error('Failed to send new_suggestion notification:', notifyErr);
+    }
 
     res.status(201).json({
       id: suggestion.id,

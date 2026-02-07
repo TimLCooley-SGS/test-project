@@ -245,69 +245,74 @@ router.post('/:slug/suggestions/:id/comments', async (req, res) => {
 
     const comment = result.rows[0];
 
-    // Notify suggestion creator + org admins of new comment (fire-and-forget)
-    const slug = req.params.slug;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const boardLink = `${frontendUrl}/board/${slug}`;
-    const commenterName = comment.user_name;
-    const commentContent = content.trim();
+    // Notify suggestion creator + org admins of new comment
+    // Must await before responding — Vercel freezes the Lambda after res.json()
+    try {
+      const slug = req.params.slug;
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const boardLink = `${frontendUrl}/board/${slug}`;
+      const commenterName = comment.user_name;
+      const commentContent = content.trim();
 
-    Promise.all([
-      db.query(
-        `SELECT s.title, u.email, u.id as creator_id
-         FROM suggestions s
-         LEFT JOIN users u ON s.created_by = u.id
-         WHERE s.id = $1`,
-        [req.params.id]
-      ),
-      db.query(
-        `SELECT email, id FROM users WHERE organization_id = $1 AND role = 'admin'`,
-        [org.id]
-      ),
-    ]).then(([suggestionResult, adminResult]) => {
-      if (suggestionResult.rows.length === 0) return;
+      const [suggestionResult, adminResult] = await Promise.all([
+        db.query(
+          `SELECT s.title, u.email, u.id as creator_id
+           FROM suggestions s
+           LEFT JOIN users u ON s.created_by = u.id
+           WHERE s.id = $1`,
+          [req.params.id]
+        ),
+        db.query(
+          `SELECT email, id FROM users WHERE organization_id = $1 AND role = 'admin'`,
+          [org.id]
+        ),
+      ]);
 
-      const suggestionTitle = suggestionResult.rows[0].title;
-      const creatorEmail = suggestionResult.rows[0].email;
-      const creatorId = suggestionResult.rows[0].creator_id;
+      if (suggestionResult.rows.length > 0) {
+        const suggestionTitle = suggestionResult.rows[0].title;
+        const creatorEmail = suggestionResult.rows[0].email;
+        const creatorId = suggestionResult.rows[0].creator_id;
 
-      // Collect unique recipients, excluding the commenter
-      const recipientSet = new Map();
-      if (creatorEmail && creatorId !== decoded.userId) {
-        recipientSet.set(creatorEmail, true);
-      }
-      for (const admin of adminResult.rows) {
-        if (admin.id !== decoded.userId) {
-          recipientSet.set(admin.email, true);
+        // Collect unique recipients, excluding the commenter
+        const recipientSet = new Map();
+        if (creatorEmail && creatorId !== decoded.userId) {
+          recipientSet.set(creatorEmail, true);
+        }
+        for (const admin of adminResult.rows) {
+          if (admin.id !== decoded.userId) {
+            recipientSet.set(admin.email, true);
+          }
+        }
+
+        const recipients = Array.from(recipientSet.keys());
+        if (recipients.length > 0) {
+          await sendTemplatedEmail({
+            to: recipients,
+            templateName: 'new_comment',
+            variables: {
+              org_name: org.name,
+              suggestion_title: suggestionTitle,
+              commenter_name: commenterName,
+              comment_content: commentContent,
+              board_link: boardLink,
+            },
+            fallbackSubject: `New comment on: ${suggestionTitle}`,
+            fallbackHtml: `
+              <h2>New Comment</h2>
+              <p>A new comment was posted on a suggestion in <strong>${org.name}</strong>:</p>
+              <p><strong>Suggestion:</strong> ${suggestionTitle}</p>
+              <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
+                <p style="margin:0;"><strong>${commenterName}</strong> commented:</p>
+                <p style="margin:8px 0 0;color:#555;">${commentContent}</p>
+              </div>
+              <p><a href="${boardLink}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">View on Board</a></p>
+            `,
+          });
         }
       }
-
-      const recipients = Array.from(recipientSet.keys());
-      if (recipients.length === 0) return;
-
-      sendTemplatedEmail({
-        to: recipients,
-        templateName: 'new_comment',
-        variables: {
-          org_name: org.name,
-          suggestion_title: suggestionTitle,
-          commenter_name: commenterName,
-          comment_content: commentContent,
-          board_link: boardLink,
-        },
-        fallbackSubject: `New comment on: ${suggestionTitle}`,
-        fallbackHtml: `
-          <h2>New Comment</h2>
-          <p>A new comment was posted on a suggestion in <strong>${org.name}</strong>:</p>
-          <p><strong>Suggestion:</strong> ${suggestionTitle}</p>
-          <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
-            <p style="margin:0;"><strong>${commenterName}</strong> commented:</p>
-            <p style="margin:8px 0 0;color:#555;">${commentContent}</p>
-          </div>
-          <p><a href="${boardLink}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">View on Board</a></p>
-        `,
-      });
-    }).catch(err => console.error('Failed to send new_comment notification:', err));
+    } catch (notifyErr) {
+      console.error('Failed to send new_comment notification:', notifyErr);
+    }
 
     res.status(201).json({
       id: comment.id,

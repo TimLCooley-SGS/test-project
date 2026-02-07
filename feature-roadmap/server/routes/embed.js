@@ -355,16 +355,18 @@ router.post('/:slug/suggestions', async (req, res) => {
 
     const s = result.rows[0];
 
-    // Notify org admins of new suggestion (fire-and-forget)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const boardLink = `${frontendUrl}/board/${org.slug}`;
+    // Notify org admins of new suggestion
+    // Must await before responding — Vercel freezes the Lambda after res.json()
+    try {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const boardLink = `${frontendUrl}/board/${org.slug}`;
 
-    db.query(
-      `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
-      [org.id]
-    ).then(adminResult => {
+      const adminResult = await db.query(
+        `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
+        [org.id]
+      );
       if (adminResult.rows.length > 0) {
-        sendTemplatedEmail({
+        await sendTemplatedEmail({
           to: adminResult.rows.map(r => r.email),
           templateName: 'new_suggestion',
           variables: {
@@ -387,7 +389,9 @@ router.post('/:slug/suggestions', async (req, res) => {
           `,
         });
       }
-    }).catch(err => console.error('Failed to send new_suggestion notification:', err));
+    } catch (notifyErr) {
+      console.error('Failed to send new_suggestion notification:', notifyErr);
+    }
 
     // Fetch category name if categoryId was provided
     let categoryName = '';
