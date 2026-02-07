@@ -223,6 +223,13 @@ export async function updateUser(
   });
 }
 
+export async function inviteUser(email: string, name: string, role: string = 'user'): Promise<{ message: string; user: User }> {
+  return apiFetch('/auth/invite', {
+    method: 'POST',
+    body: JSON.stringify({ email, name, role }),
+  });
+}
+
 export async function deleteUser(id: string): Promise<void> {
   await apiFetch(`/users/${id}`, {
     method: 'DELETE',

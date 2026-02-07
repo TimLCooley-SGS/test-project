@@ -248,8 +248,8 @@ router.post('/invite', authenticate, async (req, res) => {
       }
     }
 
-    // Create user with temporary password (they should reset it)
-    const tempPassword = Math.random().toString(36).slice(-12);
+    // Create user with random password (they'll set their own via magic link)
+    const tempPassword = crypto.randomBytes(16).toString('hex');
     const passwordHash = await bcrypt.hash(tempPassword, 10);
 
     const userId = uuidv4();
@@ -259,7 +259,62 @@ router.post('/invite', authenticate, async (req, res) => {
       [userId, req.user.organization_id, email.toLowerCase(), passwordHash, name, role]
     );
 
-    // In production, send an email with the temp password or a password reset link
+    // Generate password reset token (72h expiry) for magic link
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours
+
+    await db.query(
+      `INSERT INTO password_reset_tokens (user_id, token, expires_at)
+       VALUES ($1, $2, $3)`,
+      [userId, resetToken, expiresAt]
+    );
+
+    // Send welcome/invite email via SendGrid
+    if (process.env.SENDGRID_API_KEY && process.env.FROM_EMAIL) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const inviteLink = `${frontendUrl}/reset-password?token=${resetToken}&welcome=true`;
+      const orgName = req.user.organization_name || 'your team';
+
+      let subject = `You're invited to ${orgName} - Set Your Password`;
+      let html = `
+        <h2>Welcome to ${orgName}!</h2>
+        <p>You've been invited to join <strong>${orgName}</strong> on Feature Roadmap.</p>
+        <p>Click the button below to set your password and activate your account:</p>
+        <p><a href="${inviteLink}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Set Your Password</a></p>
+        <p style="color:#666;font-size:0.9em;">This link expires in 72 hours.</p>
+      `;
+
+      try {
+        const tplResult = await db.query(
+          "SELECT * FROM email_templates WHERE name = 'user_invite' AND is_active = true"
+        );
+        if (tplResult.rows.length > 0) {
+          const tpl = tplResult.rows[0];
+          subject = tpl.subject
+            .replace(/\{\{org_name\}\}/g, orgName);
+          html = tpl.html_body
+            .replace(/\{\{invite_link\}\}/g, inviteLink)
+            .replace(/\{\{org_name\}\}/g, orgName)
+            .replace(/\{\{user_name\}\}/g, name);
+        }
+      } catch (tplErr) {
+        // Fall back to hardcoded template
+      }
+
+      const msg = {
+        to: email.toLowerCase(),
+        from: process.env.FROM_EMAIL,
+        subject,
+        html,
+      };
+
+      try {
+        await sgMail.send(msg);
+      } catch (emailErr) {
+        console.error('SendGrid invite email error:', emailErr);
+      }
+    }
+
     res.status(201).json({
       message: 'User invited successfully',
       user: {
@@ -268,8 +323,6 @@ router.post('/invite', authenticate, async (req, res) => {
         name,
         role,
       },
-      // Only return temp password in development
-      ...(process.env.NODE_ENV !== 'production' && { tempPassword }),
     });
   } catch (error) {
     console.error('Invite error:', error);

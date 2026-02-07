@@ -158,7 +158,7 @@ function App(): React.ReactElement {
               {user.role === 'admin' && (
                 <>
                   <Route path="/admin/categories" element={<Categories />} />
-                  <Route path="/admin/users" element={<Users />} />
+                  <Route path="/admin/users" element={<Users user={user} />} />
                   <Route path="/admin/theme" element={
                     !user.isSuperAdmin && !user.planLimits?.allowTheme
                       ? <UpgradePrompt featureName="Theme Customization" />

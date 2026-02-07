@@ -9,6 +9,7 @@ function ResetPassword(): React.ReactElement {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
+  const isWelcome = searchParams.get('welcome') === 'true';
 
   const [brandName, setBrandName] = useState('Feature Roadmap');
   const [password, setPassword] = useState('');
@@ -65,15 +66,15 @@ function ResetPassword(): React.ReactElement {
       <div className="login-card">
         <div className="login-header">
           <h1>{brandName}</h1>
-          <p>Reset your password</p>
+          <p>{isWelcome ? 'Set up your account' : 'Reset your password'}</p>
         </div>
 
         <div className="login-content">
           {success ? (
             <div className="reset-success">
               <Icon name="check" size={32} color="#16a34a" />
-              <h2>Password Reset!</h2>
-              <p>Your password has been reset successfully.</p>
+              <h2>{isWelcome ? 'Account Activated!' : 'Password Reset!'}</h2>
+              <p>{isWelcome ? 'Your password has been set. You can now sign in.' : 'Your password has been reset successfully.'}</p>
               <button
                 className="login-submit-btn"
                 onClick={() => navigate('/')}
@@ -83,7 +84,7 @@ function ResetPassword(): React.ReactElement {
             </div>
           ) : (
             <>
-              <h2>Set New Password</h2>
+              <h2>{isWelcome ? 'Create Your Password' : 'Set New Password'}</h2>
               <p className="login-info">Enter your new password below</p>
 
               {error && <div className="login-error">{error}</div>}
@@ -126,7 +127,7 @@ function ResetPassword(): React.ReactElement {
                 </div>
 
                 <button type="submit" className="login-submit-btn" disabled={loading}>
-                  {loading ? 'Please wait...' : 'Reset Password'}
+                  {loading ? 'Please wait...' : isWelcome ? 'Set Password' : 'Reset Password'}
                 </button>
               </form>
             </>
