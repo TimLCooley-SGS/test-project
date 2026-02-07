@@ -1,7 +1,8 @@
 .board-page {
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 70px);
   background: var(--color-background);
   padding: 40px 20px;
+  padding-top: 110px;
 }
 
 .board-container {
