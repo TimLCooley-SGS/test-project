@@ -33,6 +33,7 @@ interface BoardSuggestion {
   votes: number;
   commentCount: number;
   createdAt: string;
+  createdByName?: string;
   hasVoted: boolean;
 }
 
@@ -273,7 +274,7 @@ function PublicBoard(): React.ReactElement {
                       )}
 
                       <span className="board-card-date">
-                        Added {new Date(suggestion.createdAt).toLocaleDateString()}
+                        Added {new Date(suggestion.createdAt).toLocaleDateString()}{suggestion.createdByName ? ` by ${suggestion.createdByName}` : ''}
                       </span>
 
                       <CommentSection
