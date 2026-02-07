@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 import Icon from '../components/Icon';
 import './Landing.css';
 
@@ -8,6 +9,9 @@ interface LandingProps {
 }
 
 function Landing({ onGetStarted }: LandingProps): React.ReactElement {
+  const { theme } = useTheme();
+  const brandName = theme.logos.brandName;
+
   return (
     <div className="landing-page">
       {/* Hero Section */}
@@ -177,7 +181,7 @@ function Landing({ onGetStarted }: LandingProps): React.ReactElement {
         <div className="footer-content">
           <div className="footer-brand">
             <Icon name="rocket" size={24} color="var(--color-primary)" />
-            <span>Feature Roadmap</span>
+            <span>{brandName}</span>
           </div>
           <div className="footer-links">
             <Link to="/pricing">Pricing</Link>
@@ -185,7 +189,7 @@ function Landing({ onGetStarted }: LandingProps): React.ReactElement {
             <a href="#how-it-works">How it Works</a>
           </div>
           <p className="footer-copyright">
-            &copy; {new Date().getFullYear()} Feature Roadmap. All rights reserved.
+            &copy; {new Date().getFullYear()} {brandName}. All rights reserved.
           </p>
         </div>
       </footer>

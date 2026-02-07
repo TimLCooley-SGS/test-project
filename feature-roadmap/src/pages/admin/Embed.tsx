@@ -3,6 +3,7 @@ import { fetchAdminEmbedConfig, updateAdminEmbedConfig } from '../../api';
 import { EmbedConfig, EmbedView } from '../../types/embed';
 import { DEFAULT_EMBED_CONFIG } from '../../types/embed';
 import { User } from '../../types/theme';
+import { useTheme } from '../../context/ThemeContext';
 import Icon from '../../components/Icon';
 import './Embed.css';
 
@@ -13,6 +14,7 @@ interface EmbedProps {
 }
 
 function Embed({ user }: EmbedProps): React.ReactElement {
+  const { theme } = useTheme();
   const [config, setConfig] = useState<EmbedConfig>(DEFAULT_EMBED_CONFIG);
   const [slug, setSlug] = useState<string>(user.organizationSlug || '');
   const [previewTab, setPreviewTab] = useState<PreviewTab>('code');
@@ -101,9 +103,9 @@ function Embed({ user }: EmbedProps): React.ReactElement {
   height="${config.height}"
   frameborder="0"
   style="border: 1px solid #e5e7eb; border-radius: 8px;"
-  title="Feature Roadmap"
+  title="${theme.logos.brandName}"
 ></iframe>`;
-  }, [config, slug]);
+  }, [config, slug, theme.logos.brandName]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(generateEmbedCode());

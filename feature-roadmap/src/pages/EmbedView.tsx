@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchEmbedConfig, fetchEmbedSuggestions, fetchEmbedCategories, embedVote, embedCreateSuggestion } from '../api';
+import { fetchEmbedConfig, fetchEmbedSuggestions, fetchEmbedCategories, embedVote, embedCreateSuggestion, fetchPlatformBranding } from '../api';
 import { generateFingerprint } from '../utils/fingerprint';
 import { Category } from '../types/theme';
 import { EmbedView as EmbedViewType } from '../types/embed';
@@ -45,6 +45,7 @@ function EmbedView(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [brandName, setBrandName] = useState('Feature Roadmap');
   const [activeView, setActiveView] = useState<EmbedViewType>('suggestions');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -59,6 +60,17 @@ function EmbedView(): React.ReactElement {
   const showFilters = config ? (searchParams.get('filters') !== null ? searchParams.get('filters') !== 'false' : config.showFilters) : true;
   const allowSubmit = config ? (searchParams.get('submit') !== null ? searchParams.get('submit') === 'true' : config.allowSubmissions) : false;
   const customCssEnabled = searchParams.get('css') === 'custom';
+
+  // Fetch platform brand name
+  useEffect(() => {
+    fetchPlatformBranding()
+      .then((branding) => {
+        if (branding.brandName) {
+          setBrandName(branding.brandName);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Load data on mount
   useEffect(() => {
@@ -423,7 +435,7 @@ function EmbedView(): React.ReactElement {
       )}
 
       <div className="embed-powered-by">
-        Powered by <a href="/" target="_blank" rel="noopener noreferrer">Feature Roadmap</a>
+        Powered by <a href="/" target="_blank" rel="noopener noreferrer">{brandName}</a>
       </div>
     </div>
   );

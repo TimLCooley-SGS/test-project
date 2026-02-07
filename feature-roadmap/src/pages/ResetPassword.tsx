@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import * as api from '../api';
+import { fetchPlatformBranding } from '../api';
 import Icon from '../components/Icon';
 import './ResetPassword.css';
 
@@ -9,12 +10,24 @@ function ResetPassword(): React.ReactElement {
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
 
+  const [brandName, setBrandName] = useState('Feature Roadmap');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchPlatformBranding()
+      .then((branding) => {
+        if (branding.brandName) {
+          setBrandName(branding.brandName);
+          document.title = branding.brandName;
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -51,7 +64,7 @@ function ResetPassword(): React.ReactElement {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <h1>Feature Roadmap</h1>
+          <h1>{brandName}</h1>
           <p>Reset your password</p>
         </div>
 

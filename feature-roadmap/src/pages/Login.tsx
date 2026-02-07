@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '../types/theme';
+import { useTheme } from '../context/ThemeContext';
 import * as api from '../api';
 import Icon from '../components/Icon';
 import './Login.css';
@@ -12,6 +13,7 @@ interface LoginProps {
 type Mode = 'login' | 'register' | 'forgot';
 
 function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
+  const { theme } = useTheme();
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,7 +70,7 @@ function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
           </button>
         )}
         <div className="login-header">
-          <h1>Feature Roadmap</h1>
+          <h1>{theme.logos.brandName}</h1>
           <p>Suggest features, vote on ideas, and track progress</p>
         </div>
 

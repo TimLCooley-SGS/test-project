@@ -120,6 +120,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   useEffect(() => {
     applyThemeToDOM(theme);
     updateFavicon(theme.logos.favicon);
+    document.title = theme.logos.brandName;
     localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
   }, [theme]);
 
