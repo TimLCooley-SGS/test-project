@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const db = require('../db');
 const { authenticate, requireAdmin } = require('../middleware/auth');
+const { sendTemplatedEmail } = require('../email');
 
 const router = express.Router();
 
@@ -353,6 +354,40 @@ router.post('/:slug/suggestions', async (req, res) => {
     );
 
     const s = result.rows[0];
+
+    // Notify org admins of new suggestion (fire-and-forget)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const boardLink = `${frontendUrl}/board/${org.slug}`;
+
+    db.query(
+      `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
+      [org.id]
+    ).then(adminResult => {
+      if (adminResult.rows.length > 0) {
+        sendTemplatedEmail({
+          to: adminResult.rows.map(r => r.email),
+          templateName: 'new_suggestion',
+          variables: {
+            org_name: org.name,
+            suggestion_title: title.trim(),
+            suggestion_description: (description || '').trim(),
+            submitter_name: 'Anonymous',
+            board_link: boardLink,
+          },
+          fallbackSubject: `New suggestion submitted: ${title.trim()}`,
+          fallbackHtml: `
+            <h2>New Suggestion</h2>
+            <p>A new suggestion has been submitted in <strong>${org.name}</strong>:</p>
+            <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
+              <h3 style="margin:0 0 8px;">${title.trim()}</h3>
+              <p style="margin:0;color:#555;">${(description || '').trim()}</p>
+            </div>
+            <p><strong>Submitted by:</strong> Anonymous</p>
+            <p><a href="${boardLink}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">View on Board</a></p>
+          `,
+        });
+      }
+    }).catch(err => console.error('Failed to send new_suggestion notification:', err));
 
     // Fetch category name if categoryId was provided
     let categoryName = '';

@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { authenticate, requireAdmin } = require('../middleware/auth');
+const { sendTemplatedEmail } = require('../email');
 
 const router = express.Router();
 
@@ -110,6 +111,42 @@ router.post('/', authenticate, async (req, res) => {
     );
 
     const suggestion = result.rows[0];
+
+    // Notify org admins of new suggestion (fire-and-forget)
+    const orgName = req.user.organization_name || 'your organization';
+    const orgSlug = req.user.organization_slug;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const boardLink = `${frontendUrl}/board/${orgSlug}`;
+
+    db.query(
+      `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
+      [req.user.organization_id]
+    ).then(adminResult => {
+      if (adminResult.rows.length > 0) {
+        sendTemplatedEmail({
+          to: adminResult.rows.map(r => r.email),
+          templateName: 'new_suggestion',
+          variables: {
+            org_name: orgName,
+            suggestion_title: title,
+            suggestion_description: description || '',
+            submitter_name: req.user.name,
+            board_link: boardLink,
+          },
+          fallbackSubject: `New suggestion submitted: ${title}`,
+          fallbackHtml: `
+            <h2>New Suggestion</h2>
+            <p>A new suggestion has been submitted in <strong>${orgName}</strong>:</p>
+            <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
+              <h3 style="margin:0 0 8px;">${title}</h3>
+              <p style="margin:0;color:#555;">${description || ''}</p>
+            </div>
+            <p><strong>Submitted by:</strong> ${req.user.name}</p>
+            <p><a href="${boardLink}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">View on Board</a></p>
+          `,
+        });
+      }
+    }).catch(err => console.error('Failed to send new_suggestion notification:', err));
 
     res.status(201).json({
       id: suggestion.id,

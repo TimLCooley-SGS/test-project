@@ -4,11 +4,7 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { generateToken, authenticate } = require('../middleware/auth');
-
-const sgMail = require('@sendgrid/mail');
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+const { sendTemplatedEmail } = require('../email');
 
 const router = express.Router();
 
@@ -269,51 +265,24 @@ router.post('/invite', authenticate, async (req, res) => {
       [userId, resetToken, expiresAt]
     );
 
-    // Send welcome/invite email via SendGrid
-    if (process.env.SENDGRID_API_KEY && process.env.FROM_EMAIL) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      const inviteLink = `${frontendUrl}/reset-password?token=${resetToken}&welcome=true`;
-      const orgName = req.user.organization_name || 'your team';
+    // Send welcome/invite email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const inviteLink = `${frontendUrl}/reset-password?token=${resetToken}&welcome=true`;
+    const orgName = req.user.organization_name || 'your team';
 
-      let subject = `You're invited to ${orgName} - Set Your Password`;
-      let html = `
+    sendTemplatedEmail({
+      to: email.toLowerCase(),
+      templateName: 'user_invite',
+      variables: { org_name: orgName, invite_link: inviteLink, user_name: name },
+      fallbackSubject: `You're invited to ${orgName} - Set Your Password`,
+      fallbackHtml: `
         <h2>Welcome to ${orgName}!</h2>
         <p>You've been invited to join <strong>${orgName}</strong> on Feature Roadmap.</p>
         <p>Click the button below to set your password and activate your account:</p>
         <p><a href="${inviteLink}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Set Your Password</a></p>
         <p style="color:#666;font-size:0.9em;">This link expires in 72 hours.</p>
-      `;
-
-      try {
-        const tplResult = await db.query(
-          "SELECT * FROM email_templates WHERE name = 'user_invite' AND is_active = true"
-        );
-        if (tplResult.rows.length > 0) {
-          const tpl = tplResult.rows[0];
-          subject = tpl.subject
-            .replace(/\{\{org_name\}\}/g, orgName);
-          html = tpl.html_body
-            .replace(/\{\{invite_link\}\}/g, inviteLink)
-            .replace(/\{\{org_name\}\}/g, orgName)
-            .replace(/\{\{user_name\}\}/g, name);
-        }
-      } catch (tplErr) {
-        // Fall back to hardcoded template
-      }
-
-      const msg = {
-        to: email.toLowerCase(),
-        from: process.env.FROM_EMAIL,
-        subject,
-        html,
-      };
-
-      try {
-        await sgMail.send(msg);
-      } catch (emailErr) {
-        console.error('SendGrid invite email error:', emailErr);
-      }
-    }
+      `,
+    });
 
     res.status(201).json({
       message: 'User invited successfully',
@@ -357,47 +326,23 @@ router.post('/forgot-password', async (req, res) => {
         [user.id, token, expiresAt]
       );
 
-      // Send email via SendGrid
-      if (process.env.SENDGRID_API_KEY && process.env.FROM_EMAIL) {
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-        const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+      // Send password reset email
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
-        // Try to load email template from DB
-        let subject = 'Reset Your Password - Feature Roadmap';
-        let html = `
-            <h2>Password Reset</h2>
-            <p>You requested a password reset. Click the link below to set a new password:</p>
-            <p><a href="${resetLink}">Reset Password</a></p>
-            <p>This link expires in 1 hour.</p>
-            <p>If you didn't request this, you can safely ignore this email.</p>
-          `;
-
-        try {
-          const tplResult = await db.query(
-            "SELECT * FROM email_templates WHERE name = 'password_reset' AND is_active = true"
-          );
-          if (tplResult.rows.length > 0) {
-            const tpl = tplResult.rows[0];
-            subject = tpl.subject;
-            html = tpl.html_body.replace(/\{\{reset_link\}\}/g, resetLink);
-          }
-        } catch (tplErr) {
-          // Fall back to hardcoded template
-        }
-
-        const msg = {
-          to: email.toLowerCase(),
-          from: process.env.FROM_EMAIL,
-          subject,
-          html,
-        };
-
-        try {
-          await sgMail.send(msg);
-        } catch (emailErr) {
-          console.error('SendGrid error:', emailErr);
-        }
-      }
+      sendTemplatedEmail({
+        to: email.toLowerCase(),
+        templateName: 'password_reset',
+        variables: { reset_link: resetLink },
+        fallbackSubject: 'Reset Your Password - Feature Roadmap',
+        fallbackHtml: `
+          <h2>Password Reset</h2>
+          <p>You requested a password reset. Click the link below to set a new password:</p>
+          <p><a href="${resetLink}">Reset Password</a></p>
+          <p>This link expires in 1 hour.</p>
+          <p>If you didn't request this, you can safely ignore this email.</p>
+        `,
+      });
     }
 
     // Always return success to avoid revealing if email exists
