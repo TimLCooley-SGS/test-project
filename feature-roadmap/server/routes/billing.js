@@ -125,6 +125,75 @@ router.post('/checkout', async (req, res) => {
   }
 });
 
+// POST /api/billing/switch-plan — switch existing subscription to a different plan
+router.post('/switch-plan', async (req, res) => {
+  const stripe = await getStripeForRequest();
+  if (!stripe) {
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+
+  try {
+    const { planId, interval = 'monthly' } = req.body;
+    const orgId = req.user.organization_id;
+
+    // Get the org's active subscription
+    const subResult = await db.query(
+      `SELECT s.*, p.price_monthly as old_price_monthly, p.price_yearly as old_price_yearly
+       FROM subscriptions s
+       JOIN plans p ON s.plan_id = p.id
+       WHERE s.organization_id = $1 AND s.status = 'active'
+       ORDER BY s.created_at DESC LIMIT 1`,
+      [orgId]
+    );
+    if (subResult.rows.length === 0) {
+      return res.status(400).json({ error: 'No active subscription found. Use checkout instead.' });
+    }
+    const currentSub = subResult.rows[0];
+
+    // Look up target plan
+    const planResult = await db.query('SELECT * FROM plans WHERE id = $1', [planId]);
+    if (planResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Plan not found' });
+    }
+    const targetPlan = planResult.rows[0];
+
+    const newPriceId = interval === 'yearly' ? targetPlan.stripe_price_yearly_id : targetPlan.stripe_price_monthly_id;
+    if (!newPriceId) {
+      return res.status(400).json({ error: 'Target plan does not have a Stripe price configured' });
+    }
+
+    // Retrieve the Stripe subscription to get the subscription item ID
+    const stripeSub = await stripe.subscriptions.retrieve(currentSub.stripe_subscription_id);
+    const subscriptionItemId = stripeSub.items.data[0].id;
+
+    // Determine upgrade vs downgrade for proration behavior
+    const oldPrice = interval === 'yearly' ? currentSub.old_price_yearly : currentSub.old_price_monthly;
+    const newPrice = interval === 'yearly' ? targetPlan.price_yearly : targetPlan.price_monthly;
+    const isUpgrade = newPrice > oldPrice;
+
+    // Update the Stripe subscription
+    const updatedSub = await stripe.subscriptions.update(currentSub.stripe_subscription_id, {
+      items: [{ id: subscriptionItemId, price: newPriceId }],
+      proration_behavior: isUpgrade ? 'create_prorations' : 'none',
+    });
+
+    // Eagerly update local DB
+    await db.query(
+      `UPDATE subscriptions SET plan_id = $1, updated_at = NOW() WHERE id = $2`,
+      [planId, currentSub.id]
+    );
+    await db.query(
+      'UPDATE organizations SET plan = $1 WHERE id = $2',
+      [targetPlan.slug, orgId]
+    );
+
+    res.json({ success: true, subscription: updatedSub });
+  } catch (error) {
+    console.error('Switch plan error:', error);
+    res.status(500).json({ error: 'Failed to switch plan' });
+  }
+});
+
 // POST /api/billing/portal — create Stripe Customer Portal session
 router.post('/portal', async (req, res) => {
   const stripe = await getStripeForRequest();

@@ -91,6 +91,18 @@ function Billing(): React.ReactElement {
     }
   };
 
+  const handleSwitchPlan = async (planId: string) => {
+    setCheckoutLoading(planId);
+    try {
+      await api.switchPlan(planId, billingInterval);
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to switch plan');
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
+
   const handleManageBilling = async () => {
     try {
       const { url } = await api.createPortalSession();
@@ -226,6 +238,14 @@ function Billing(): React.ReactElement {
                   </button>
                 ) : isFree ? (
                   <button className="btn btn-secondary" disabled>Free</button>
+                ) : subscription && subscription.status === 'active' ? (
+                  <button
+                    className="btn btn-primary"
+                    disabled={checkoutLoading === plan.id}
+                    onClick={() => handleSwitchPlan(plan.id)}
+                  >
+                    {checkoutLoading === plan.id ? 'Switching...' : 'Switch'}
+                  </button>
                 ) : (
                   <button
                     className="btn btn-primary"

@@ -398,6 +398,13 @@ export async function createCheckoutSession(planId: string, interval: 'monthly' 
   });
 }
 
+export async function switchPlan(planId: string, interval: 'monthly' | 'yearly' = 'monthly'): Promise<{ success: boolean }> {
+  return apiFetch('/billing/switch-plan', {
+    method: 'POST',
+    body: JSON.stringify({ planId, interval }),
+  });
+}
+
 export async function createPortalSession(): Promise<{ url: string }> {
   return apiFetch('/billing/portal', { method: 'POST' });
 }
