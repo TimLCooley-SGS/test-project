@@ -18,6 +18,7 @@ import PlatformOrganizations from './pages/platform/Organizations';
 import PlatformUsers from './pages/platform/PlatformUsers';
 import PlatformSettings from './pages/platform/Settings';
 import PlatformAnalytics from './pages/platform/Analytics';
+import Profile from './pages/Profile';
 import ResetPassword from './pages/ResetPassword';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -143,6 +144,7 @@ function App(): React.ReactElement {
             <Routes>
               <Route path="/" element={<Home user={user} />} />
               <Route path="/roadmap" element={<Roadmap />} />
+              <Route path="/profile" element={<Profile user={user} onUserUpdate={(u) => setUser(u)} />} />
               {user.role === 'admin' && (
                 <>
                   <Route path="/admin/categories" element={<Categories />} />

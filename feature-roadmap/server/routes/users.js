@@ -78,7 +78,7 @@ router.get('/:id', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, password, role, customerValue, company, crmId } = req.body;
+    const { name, email, password, role, customerValue, company, crmId, avatarUrl } = req.body;
 
     // Users can only update their own profile (except role/customerValue)
     // Admins can update anyone
@@ -152,6 +152,11 @@ router.patch('/:id', authenticate, async (req, res) => {
       values.push(crmId);
       paramIndex++;
     }
+    if (avatarUrl !== undefined) {
+      updates.push(`avatar_url = $${paramIndex}`);
+      values.push(avatarUrl);
+      paramIndex++;
+    }
 
     if (updates.length === 0) {
       return res.status(400).json({ error: 'No valid updates provided' });
@@ -160,7 +165,7 @@ router.patch('/:id', authenticate, async (req, res) => {
     values.push(id);
     const result = await db.query(
       `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}
-       RETURNING id, name, email, role, customer_value, company, crm_id`,
+       RETURNING id, name, email, role, customer_value, company, crm_id, avatar_url`,
       values
     );
 
@@ -173,6 +178,7 @@ router.patch('/:id', authenticate, async (req, res) => {
       customerValue: parseFloat(user.customer_value) || 0,
       company: user.company,
       crmId: user.crm_id,
+      avatarUrl: user.avatar_url || null,
     });
   } catch (error) {
     console.error('Update user error:', error);

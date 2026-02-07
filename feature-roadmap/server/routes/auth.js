@@ -168,6 +168,7 @@ router.post('/login', async (req, res) => {
         organizationSlug: user.organization_slug,
         customerValue: user.customer_value,
         company: user.company,
+        avatarUrl: user.avatar_url || null,
       },
     });
   } catch (error) {
@@ -190,6 +191,7 @@ router.get('/me', authenticate, async (req, res) => {
       organizationSlug: req.user.organization_slug,
       customerValue: req.user.customer_value,
       company: req.user.company,
+      avatarUrl: req.user.avatar_url || null,
     },
   });
 });

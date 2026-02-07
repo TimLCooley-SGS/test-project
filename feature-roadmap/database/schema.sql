@@ -38,7 +38,7 @@ CREATE TABLE users (
 
     -- Profile
     name VARCHAR(255) NOT NULL,
-    avatar_url VARCHAR(500),
+    avatar_url TEXT,
 
     -- Role within organization
     role VARCHAR(50) NOT NULL DEFAULT 'user',  -- admin, user

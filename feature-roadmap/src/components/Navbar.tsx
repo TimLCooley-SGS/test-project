@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { User } from '../types/theme';
 import Icon from './Icon';
@@ -40,13 +41,22 @@ function Navbar({ user, onLogout, onMenuToggle, isMobileMenuOpen }: NavbarProps)
         </div>
       </div>
       <div className="navbar-user">
-        <div className="user-info">
-          <span className="user-name">{user.name}</span>
-          <span className={`user-role ${user.role}`}>
-            {user.role}
-            {user.isSuperAdmin && <span className="super-admin-badge">super admin</span>}
-          </span>
-        </div>
+        <Link to="/profile" className="navbar-profile-link">
+          <div className="navbar-avatar">
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="navbar-avatar-img" />
+            ) : (
+              <span className="navbar-avatar-initial">{user.name.charAt(0).toUpperCase()}</span>
+            )}
+          </div>
+          <div className="user-info">
+            <span className="user-name">{user.name}</span>
+            <span className={`user-role ${user.role}`}>
+              {user.role}
+              {user.isSuperAdmin && <span className="super-admin-badge">super admin</span>}
+            </span>
+          </div>
+        </Link>
         <button onClick={onLogout} className="logout-btn">
           Logout
         </button>

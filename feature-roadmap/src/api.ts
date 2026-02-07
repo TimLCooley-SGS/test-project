@@ -215,7 +215,7 @@ export async function fetchUsers(): Promise<User[]> {
 
 export async function updateUser(
   id: string,
-  updates: { name?: string; email?: string; role?: 'admin' | 'user'; customerValue?: number; company?: string }
+  updates: { name?: string; email?: string; password?: string; role?: 'admin' | 'user'; customerValue?: number; company?: string; avatarUrl?: string | null }
 ): Promise<User> {
   return apiFetch(`/users/${id}`, {
     method: 'PATCH',

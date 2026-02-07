@@ -75,6 +75,7 @@ export interface User {
   customerValue?: number; // Value from CRM (e.g., ARR, deal size, tier score)
   company?: string;
   crmId?: string; // ID in external CRM system
+  avatarUrl?: string | null;
   organizationId?: string;
   organizationName?: string;
   organizationSlug?: string;
