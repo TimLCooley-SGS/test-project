@@ -418,13 +418,39 @@ router.patch('/plans/:id', async (req, res) => {
     }
     const plan = current.rows[0];
 
+    let stripeProductId = plan.stripe_product_id;
     let stripeMonthlyPriceId = plan.stripe_price_monthly_id;
     let stripeYearlyPriceId = plan.stripe_price_yearly_id;
 
-    if (stripe && plan.stripe_product_id) {
-      // Update product name/description
+    if (stripe && !stripeProductId) {
+      // Plan exists in DB but not in Stripe — create product + prices
+      const product = await stripe.products.create({
+        name: name || plan.name,
+        description: (description !== undefined ? description : plan.description) || undefined,
+      });
+      stripeProductId = product.id;
+
+      const effectiveMonthly = price_monthly !== undefined ? price_monthly : plan.price_monthly;
+      if (effectiveMonthly > 0) {
+        const mp = await stripe.prices.create({
+          product: product.id, unit_amount: effectiveMonthly, currency: 'usd',
+          recurring: { interval: 'month' },
+        });
+        stripeMonthlyPriceId = mp.id;
+      }
+
+      const effectiveYearly = price_yearly !== undefined ? price_yearly : plan.price_yearly;
+      if (effectiveYearly > 0) {
+        const yp = await stripe.prices.create({
+          product: product.id, unit_amount: effectiveYearly, currency: 'usd',
+          recurring: { interval: 'year' },
+        });
+        stripeYearlyPriceId = yp.id;
+      }
+    } else if (stripe && stripeProductId) {
+      // Update existing Stripe product
       if (name || description !== undefined) {
-        await stripe.products.update(plan.stripe_product_id, {
+        await stripe.products.update(stripeProductId, {
           name: name || plan.name,
           description: description !== undefined ? description : plan.description,
         });
@@ -434,9 +460,7 @@ router.patch('/plans/:id', async (req, res) => {
       if (price_monthly !== undefined && price_monthly !== plan.price_monthly) {
         if (price_monthly > 0) {
           const newPrice = await stripe.prices.create({
-            product: plan.stripe_product_id,
-            unit_amount: price_monthly,
-            currency: 'usd',
+            product: stripeProductId, unit_amount: price_monthly, currency: 'usd',
             recurring: { interval: 'month' },
           });
           if (plan.stripe_price_monthly_id) {
@@ -455,9 +479,7 @@ router.patch('/plans/:id', async (req, res) => {
       if (price_yearly !== undefined && price_yearly !== plan.price_yearly) {
         if (price_yearly > 0) {
           const newPrice = await stripe.prices.create({
-            product: plan.stripe_product_id,
-            unit_amount: price_yearly,
-            currency: 'usd',
+            product: stripeProductId, unit_amount: price_yearly, currency: 'usd',
             recurring: { interval: 'year' },
           });
           if (plan.stripe_price_yearly_id) {
@@ -482,10 +504,11 @@ router.patch('/plans/:id', async (req, res) => {
         features = COALESCE($5, features),
         is_active = COALESCE($6, is_active),
         sort_order = COALESCE($7, sort_order),
-        stripe_price_monthly_id = $8,
-        stripe_price_yearly_id = $9,
+        stripe_product_id = COALESCE($8, stripe_product_id),
+        stripe_price_monthly_id = $9,
+        stripe_price_yearly_id = $10,
         updated_at = NOW()
-      WHERE id = $10 RETURNING *`,
+      WHERE id = $11 RETURNING *`,
       [
         name || null, description !== undefined ? description : null,
         price_monthly !== undefined ? price_monthly : null,
@@ -493,7 +516,7 @@ router.patch('/plans/:id', async (req, res) => {
         features ? JSON.stringify(features) : null,
         is_active !== undefined ? is_active : null,
         sort_order !== undefined ? sort_order : null,
-        stripeMonthlyPriceId, stripeYearlyPriceId, id,
+        stripeProductId, stripeMonthlyPriceId, stripeYearlyPriceId, id,
       ]
     );
 
