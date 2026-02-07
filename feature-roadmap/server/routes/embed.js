@@ -185,13 +185,15 @@ router.get('/:slug/suggestions', async (req, res) => {
       `SELECT
         s.id, s.title, s.description, s.status, s.sprint, s.created_at,
         c.name as category_name, c.id as category_id,
+        u.name as created_by_name,
         COUNT(DISTINCT v.id) + COUNT(DISTINCT av.id) as vote_count
       FROM suggestions s
       LEFT JOIN categories c ON s.category_id = c.id
+      LEFT JOIN users u ON s.created_by = u.id
       LEFT JOIN votes v ON s.id = v.suggestion_id
       LEFT JOIN anonymous_votes av ON s.id = av.suggestion_id
       WHERE s.organization_id = $1
-      GROUP BY s.id, c.name, c.id
+      GROUP BY s.id, c.name, c.id, u.name
       ORDER BY vote_count DESC, s.created_at DESC`,
       [org.id]
     );
@@ -216,6 +218,7 @@ router.get('/:slug/suggestions', async (req, res) => {
       categoryId: s.category_id,
       votes: parseInt(s.vote_count),
       createdAt: s.created_at,
+      createdByName: s.created_by_name || null,
       hasVoted: votedSuggestionIds.has(s.id),
     }));
 

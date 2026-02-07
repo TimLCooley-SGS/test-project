@@ -31,6 +31,7 @@ interface EmbedSuggestion {
   sprint: string | null;
   votes: number;
   createdAt: string;
+  createdByName?: string;
   hasVoted: boolean;
 }
 
@@ -386,7 +387,7 @@ function EmbedView(): React.ReactElement {
                     <p className="embed-card-description">{suggestion.description}</p>
 
                     <span className="embed-card-date">
-                      Added {new Date(suggestion.createdAt).toLocaleDateString()}
+                      Added {new Date(suggestion.createdAt).toLocaleDateString()}{suggestion.createdByName ? ` by ${suggestion.createdByName}` : ''}
                     </span>
                   </div>
                 </div>
