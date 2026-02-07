@@ -465,37 +465,6 @@
   background: var(--color-hover);
 }
 
-.stripe-key-status {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--color-textSecondary);
-}
-
-.key-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-left: 6px;
-}
-
-.key-dot:first-child {
-  margin-left: 0;
-}
-
-.key-dot.configured {
-  background: #059669;
-}
-
-.key-dot.missing {
-  background: #d1d5db;
-}
-
-.key-label {
-  font-size: 0.7rem;
-}
 
 .invoice-link {
   color: var(--color-primary);

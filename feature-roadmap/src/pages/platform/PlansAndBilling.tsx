@@ -240,12 +240,6 @@ function PlansAndBilling(): React.ReactElement {
                     Live
                   </button>
                 </div>
-                <div className="stripe-key-status">
-                  <span className={`key-dot ${stripeMode.testKeySet ? 'configured' : 'missing'}`} />
-                  <span className="key-label">Test</span>
-                  <span className={`key-dot ${stripeMode.liveKeySet ? 'configured' : 'missing'}`} />
-                  <span className="key-label">Live</span>
-                </div>
               </div>
             )}
           </div>
