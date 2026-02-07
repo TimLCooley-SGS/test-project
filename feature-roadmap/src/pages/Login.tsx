@@ -8,13 +8,14 @@ import './Login.css';
 interface LoginProps {
   onLoginSuccess: (user: User) => void;
   onBack?: () => void;
+  initialMode?: 'login' | 'register';
 }
 
 type Mode = 'login' | 'register' | 'forgot';
 
-function Login({ onLoginSuccess, onBack }: LoginProps): React.ReactElement {
+function Login({ onLoginSuccess, onBack, initialMode = 'login' }: LoginProps): React.ReactElement {
   const { theme } = useTheme();
-  const [mode, setMode] = useState<Mode>('login');
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');

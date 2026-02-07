@@ -32,6 +32,7 @@ function App(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const location = useLocation();
 
   // Check if we're on the embed or reset-password route
@@ -103,6 +104,12 @@ function App(): React.ReactElement {
   }
 
   const handleShowLogin = (): void => {
+    setAuthMode('login');
+    setShowLogin(true);
+  };
+
+  const handleShowSignup = (): void => {
+    setAuthMode('register');
     setShowLogin(true);
   };
 
@@ -112,15 +119,15 @@ function App(): React.ReactElement {
 
   if (!user) {
     if (showLogin) {
-      return <Login onLoginSuccess={handleLoginSuccess} onBack={handleCloseLogin} />;
+      return <Login onLoginSuccess={handleLoginSuccess} onBack={handleCloseLogin} initialMode={authMode} />;
     }
 
     return (
       <>
-        <PublicNavbar onLoginClick={handleShowLogin} />
+        <PublicNavbar onLoginClick={handleShowLogin} onSignupClick={handleShowSignup} />
         <Routes>
-          <Route path="/" element={<Landing onGetStarted={handleShowLogin} />} />
-          <Route path="/pricing" element={<Pricing onGetStarted={handleShowLogin} />} />
+          <Route path="/" element={<Landing onGetStarted={handleShowSignup} />} />
+          <Route path="/pricing" element={<Pricing onGetStarted={handleShowSignup} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </>

@@ -6,9 +6,10 @@ import './PublicNavbar.css';
 
 interface PublicNavbarProps {
   onLoginClick: () => void;
+  onSignupClick: () => void;
 }
 
-function PublicNavbar({ onLoginClick }: PublicNavbarProps): React.ReactElement {
+function PublicNavbar({ onLoginClick, onSignupClick }: PublicNavbarProps): React.ReactElement {
   const { theme } = useTheme();
   const location = useLocation();
 
@@ -47,7 +48,7 @@ function PublicNavbar({ onLoginClick }: PublicNavbarProps): React.ReactElement {
           <button onClick={onLoginClick} className="public-login-btn">
             Log In
           </button>
-          <button onClick={onLoginClick} className="public-signup-btn">
+          <button onClick={onSignupClick} className="public-signup-btn">
             Start Free Trial
           </button>
         </div>
