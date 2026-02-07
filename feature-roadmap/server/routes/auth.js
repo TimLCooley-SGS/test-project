@@ -1,11 +1,11 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
-const sgMail = require('@sendgrid/mail');
 const db = require('../db');
 const { generateToken, authenticate } = require('../middleware/auth');
 
+const sgMail = require('@sendgrid/mail');
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
