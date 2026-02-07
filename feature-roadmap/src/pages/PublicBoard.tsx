@@ -4,6 +4,8 @@ import { fetchBoardSuggestions, fetchBoardCategories, boardVote, fetchPlatformBr
 import { generateFingerprint } from '../utils/fingerprint';
 import { Category } from '../types/theme';
 import Icon from '../components/Icon';
+import { BoardAuthProvider } from '../context/BoardAuthContext';
+import CommentSection from '../components/board/CommentSection';
 import './PublicBoard.css';
 
 const statusColors: Record<string, string> = {
@@ -29,6 +31,7 @@ interface BoardSuggestion {
   status: string;
   sprint: string | null;
   votes: number;
+  commentCount: number;
   createdAt: string;
   hasVoted: boolean;
 }
@@ -178,6 +181,7 @@ function PublicBoard(): React.ReactElement {
   }
 
   return (
+    <BoardAuthProvider slug={slug!}>
     <div className="board-page">
       <div className="board-container">
         <div className="board-header">
@@ -271,6 +275,12 @@ function PublicBoard(): React.ReactElement {
                       <span className="board-card-date">
                         Added {new Date(suggestion.createdAt).toLocaleDateString()}
                       </span>
+
+                      <CommentSection
+                        slug={slug!}
+                        suggestionId={suggestion.id}
+                        commentCount={suggestion.commentCount || 0}
+                      />
                     </div>
                   </div>
                 ))
@@ -316,6 +326,7 @@ function PublicBoard(): React.ReactElement {
         </div>
       </div>
     </div>
+    </BoardAuthProvider>
   );
 }
 

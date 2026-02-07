@@ -264,6 +264,90 @@ export async function fetchPlatformBranding(): Promise<{ logo: string | null; fa
   return publicFetch('/platform/branding');
 }
 
+// --- Board Commenter Auth ---
+
+const BOARD_TOKEN_KEY = 'board_commenter_token';
+
+export function getBoardToken(): string | null {
+  return localStorage.getItem(BOARD_TOKEN_KEY);
+}
+
+export function setBoardToken(token: string): void {
+  localStorage.setItem(BOARD_TOKEN_KEY, token);
+}
+
+export function clearBoardToken(): void {
+  localStorage.removeItem(BOARD_TOKEN_KEY);
+}
+
+export interface BoardCommenter {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string | null;
+}
+
+export interface BoardComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+}
+
+export async function boardSignup(
+  slug: string,
+  name: string,
+  email: string,
+  password: string
+): Promise<{ token: string; user: BoardCommenter }> {
+  return publicFetch(`/board/${slug}/auth/signup`, {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password }),
+  });
+}
+
+export async function boardLogin(
+  slug: string,
+  email: string,
+  password: string
+): Promise<{ token: string; user: BoardCommenter }> {
+  return publicFetch(`/board/${slug}/auth/login`, {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function boardGetMe(slug: string): Promise<{ user: BoardCommenter }> {
+  const token = getBoardToken();
+  if (!token) throw new Error('Not authenticated');
+  return publicFetch(`/board/${slug}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function fetchBoardComments(slug: string, suggestionId: string): Promise<BoardComment[]> {
+  return publicFetch(`/board/${slug}/suggestions/${suggestionId}/comments`);
+}
+
+export async function postBoardComment(
+  slug: string,
+  suggestionId: string,
+  content: string
+): Promise<BoardComment> {
+  const token = getBoardToken();
+  if (!token) throw new Error('Not authenticated');
+  return publicFetch(`/board/${slug}/suggestions/${suggestionId}/comments`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ content }),
+  });
+}
+
 // --- Public Board API ---
 
 export async function fetchBoardSuggestions(slug: string, fingerprint?: string): Promise<any[]> {
