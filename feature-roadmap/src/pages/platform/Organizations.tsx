@@ -11,6 +11,9 @@ interface Org {
   user_count: number;
   suggestion_count: number;
   created_at: string;
+  subscription_status: string | null;
+  cancel_at_period_end: boolean | null;
+  current_period_end: string | null;
 }
 
 function Organizations(): React.ReactElement {
@@ -40,13 +43,41 @@ function Organizations(): React.ReactElement {
     }
   };
 
-  const handleToggleActive = async (id: string, currentActive: boolean) => {
+  const handleToggleActive = async (org: Org) => {
+    if (org.is_active) {
+      if (!window.confirm(`Deactivate "${org.name}"? This will prevent all users in this organization from accessing the platform.`)) {
+        return;
+      }
+    }
     try {
-      await api.updatePlatformOrganization(id, { is_active: !currentActive });
-      setOrgs(prev => prev.map(o => o.id === id ? { ...o, is_active: !currentActive } : o));
+      await api.updatePlatformOrganization(org.id, { is_active: !org.is_active });
+      await loadOrgs();
     } catch (err) {
       console.error('Failed to toggle active:', err);
     }
+  };
+
+  const [canceling, setCanceling] = useState<string | null>(null);
+
+  const handleCancelSubscription = async (org: Org) => {
+    if (!window.confirm(`Cancel ${org.name}'s subscription? They will retain access until the current billing period ends.`)) {
+      return;
+    }
+    setCanceling(org.id);
+    try {
+      await api.cancelOrgSubscription(org.id);
+      await loadOrgs();
+    } catch (err: any) {
+      alert(err.message || 'Failed to cancel subscription');
+    } finally {
+      setCanceling(null);
+    }
+  };
+
+  const getSubscriptionLabel = (org: Org) => {
+    if (!org.subscription_status) return '\u2014';
+    if (org.cancel_at_period_end && org.subscription_status === 'active') return 'Canceling';
+    return org.subscription_status.charAt(0).toUpperCase() + org.subscription_status.slice(1);
   };
 
   const filtered = orgs.filter(o =>
@@ -82,6 +113,7 @@ function Organizations(): React.ReactElement {
               <th>Name</th>
               <th>Slug</th>
               <th>Plan</th>
+              <th>Subscription</th>
               <th>Users</th>
               <th>Suggestions</th>
               <th>Active</th>
@@ -90,7 +122,7 @@ function Organizations(): React.ReactElement {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="empty-cell">No organizations found</td></tr>
+              <tr><td colSpan={8} className="empty-cell">No organizations found</td></tr>
             ) : (
               filtered.map(org => (
                 <tr key={org.id} className={!org.is_active ? 'inactive-row' : ''}>
@@ -107,12 +139,26 @@ function Organizations(): React.ReactElement {
                       <option value="enterprise">Enterprise</option>
                     </select>
                   </td>
+                  <td>
+                    <span className={`sub-status ${org.cancel_at_period_end ? 'canceling' : (org.subscription_status || '')}`}>
+                      {getSubscriptionLabel(org)}
+                    </span>
+                    {org.subscription_status === 'active' && !org.cancel_at_period_end && (
+                      <button
+                        className="cancel-sub-btn"
+                        onClick={() => handleCancelSubscription(org)}
+                        disabled={canceling === org.id}
+                      >
+                        {canceling === org.id ? 'Canceling...' : 'Cancel'}
+                      </button>
+                    )}
+                  </td>
                   <td className="num-cell">{org.user_count}</td>
                   <td className="num-cell">{org.suggestion_count}</td>
                   <td>
                     <button
                       className={`status-toggle ${org.is_active ? 'active' : 'inactive'}`}
-                      onClick={() => handleToggleActive(org.id, org.is_active)}
+                      onClick={() => handleToggleActive(org)}
                     >
                       {org.is_active ? 'Active' : 'Inactive'}
                     </button>

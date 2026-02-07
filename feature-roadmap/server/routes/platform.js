@@ -42,8 +42,19 @@ router.get('/organizations', async (req, res) => {
     const result = await db.query(`
       SELECT o.*,
         (SELECT COUNT(*) FROM users u WHERE u.organization_id = o.id) as user_count,
-        (SELECT COUNT(*) FROM suggestions s WHERE s.organization_id = o.id) as suggestion_count
+        (SELECT COUNT(*) FROM suggestions s WHERE s.organization_id = o.id) as suggestion_count,
+        sub.status as subscription_status,
+        sub.cancel_at_period_end,
+        sub.current_period_end,
+        sub.stripe_subscription_id
       FROM organizations o
+      LEFT JOIN LATERAL (
+        SELECT s.status, s.cancel_at_period_end, s.current_period_end, s.stripe_subscription_id
+        FROM subscriptions s
+        WHERE s.organization_id = o.id
+        ORDER BY s.created_at DESC
+        LIMIT 1
+      ) sub ON true
       ORDER BY o.created_at DESC
     `);
     res.json(result.rows);
@@ -81,10 +92,160 @@ router.patch('/organizations/:id', async (req, res) => {
       return res.status(404).json({ error: 'Organization not found' });
     }
 
+    // Send deactivation email to org admin(s) when is_active set to false
+    if (is_active === false && process.env.SENDGRID_API_KEY && process.env.FROM_EMAIL) {
+      const orgName = result.rows[0].name;
+      const adminResult = await db.query(
+        `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
+        [id]
+      );
+
+      if (adminResult.rows.length > 0) {
+        let subject = 'Your organization has been deactivated';
+        let html = `
+          <h2>Organization Deactivated</h2>
+          <p>Your organization <strong>${orgName}</strong> has been deactivated by the platform administrator.</p>
+          <p>Users in your organization will no longer be able to access the platform until the account is reactivated.</p>
+          <p>If you believe this was done in error, please contact support.</p>
+        `;
+
+        try {
+          const tplResult = await db.query(
+            "SELECT * FROM email_templates WHERE name = 'organization_deactivation' AND is_active = true"
+          );
+          if (tplResult.rows.length > 0) {
+            const tpl = tplResult.rows[0];
+            subject = tpl.subject.replace(/\{\{org_name\}\}/g, orgName);
+            html = tpl.html_body.replace(/\{\{org_name\}\}/g, orgName);
+          }
+        } catch (tplErr) {
+          console.error('Email template lookup failed, using fallback:', tplErr);
+        }
+
+        for (const { email } of adminResult.rows) {
+          try {
+            await sgMail.send({ to: email, from: process.env.FROM_EMAIL, subject, html });
+          } catch (emailErr) {
+            console.error(`Failed to send deactivation email to ${email}:`, emailErr);
+          }
+        }
+      }
+    }
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Platform org update error:', error);
     res.status(500).json({ error: 'Failed to update organization' });
+  }
+});
+
+// POST /api/platform/organizations/:id/cancel-subscription
+router.post('/organizations/:id/cancel-subscription', async (req, res) => {
+  const stripe = await getStripeForRequest();
+  try {
+    const { id } = req.params;
+
+    // Look up the org's active subscription
+    const subResult = await db.query(
+      `SELECT s.*, p.name as plan_name
+       FROM subscriptions s
+       JOIN plans p ON s.plan_id = p.id
+       WHERE s.organization_id = $1 AND s.status = 'active'
+       ORDER BY s.created_at DESC LIMIT 1`,
+      [id]
+    );
+
+    if (subResult.rows.length === 0) {
+      return res.status(404).json({ error: 'No active subscription found for this organization' });
+    }
+
+    const sub = subResult.rows[0];
+
+    if (sub.cancel_at_period_end) {
+      return res.status(400).json({ error: 'Subscription is already set to cancel' });
+    }
+
+    if (!stripe) {
+      return res.status(400).json({ error: 'Stripe is not configured' });
+    }
+
+    // Set cancel_at_period_end in Stripe
+    await stripe.subscriptions.update(sub.stripe_subscription_id, {
+      cancel_at_period_end: true,
+    });
+
+    // Update local DB
+    await db.query(
+      `UPDATE subscriptions SET cancel_at_period_end = true, updated_at = NOW() WHERE id = $1`,
+      [sub.id]
+    );
+
+    // Look up org name and admin emails
+    const orgResult = await db.query('SELECT name FROM organizations WHERE id = $1', [id]);
+    const orgName = orgResult.rows[0]?.name || 'Your organization';
+
+    const adminResult = await db.query(
+      `SELECT email FROM users WHERE organization_id = $1 AND role = 'admin'`,
+      [id]
+    );
+
+    // Calculate days remaining
+    const endDate = new Date(sub.current_period_end);
+    const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+    const formattedEndDate = endDate.toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    });
+
+    // Send cancellation email to admin(s)
+    if (process.env.SENDGRID_API_KEY && process.env.FROM_EMAIL && adminResult.rows.length > 0) {
+      let subject = 'Your subscription has been canceled';
+      let html = `
+        <h2>Subscription Canceled</h2>
+        <p>Your organization <strong>${orgName}</strong>'s <strong>${sub.plan_name}</strong> plan has been canceled by the platform administrator.</p>
+        <p>You will continue to have access until <strong>${formattedEndDate}</strong> (${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining).</p>
+        <p>After that date, your account will revert to the free plan.</p>
+      `;
+
+      try {
+        const tplResult = await db.query(
+          "SELECT * FROM email_templates WHERE name = 'subscription_cancellation' AND is_active = true"
+        );
+        if (tplResult.rows.length > 0) {
+          const tpl = tplResult.rows[0];
+          subject = tpl.subject
+            .replace(/\{\{org_name\}\}/g, orgName)
+            .replace(/\{\{plan_name\}\}/g, sub.plan_name)
+            .replace(/\{\{days_remaining\}\}/g, String(daysRemaining))
+            .replace(/\{\{end_date\}\}/g, formattedEndDate);
+          html = tpl.html_body
+            .replace(/\{\{org_name\}\}/g, orgName)
+            .replace(/\{\{plan_name\}\}/g, sub.plan_name)
+            .replace(/\{\{days_remaining\}\}/g, String(daysRemaining))
+            .replace(/\{\{end_date\}\}/g, formattedEndDate);
+        }
+      } catch (tplErr) {
+        console.error('Email template lookup failed, using fallback:', tplErr);
+      }
+
+      const emails = adminResult.rows.map(r => r.email);
+      for (const email of emails) {
+        try {
+          await sgMail.send({
+            to: email,
+            from: process.env.FROM_EMAIL,
+            subject,
+            html,
+          });
+        } catch (emailErr) {
+          console.error(`Failed to send cancellation email to ${email}:`, emailErr);
+        }
+      }
+    }
+
+    res.json({ success: true, cancel_at_period_end: true, current_period_end: sub.current_period_end });
+  } catch (error) {
+    console.error('Platform cancel subscription error:', error);
+    res.status(500).json({ error: 'Failed to cancel subscription' });
   }
 });
 

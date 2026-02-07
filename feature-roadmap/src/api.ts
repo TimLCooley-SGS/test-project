@@ -441,6 +441,12 @@ export async function deletePlatformPlan(id: string): Promise<void> {
   await apiFetch(`/platform/plans/${id}`, { method: 'DELETE' });
 }
 
+export async function cancelOrgSubscription(orgId: string): Promise<any> {
+  return apiFetch(`/platform/organizations/${orgId}/cancel-subscription`, {
+    method: 'POST',
+  });
+}
+
 export async function fetchPlatformPayments(): Promise<any[]> {
   return apiFetch('/platform/payments');
 }
