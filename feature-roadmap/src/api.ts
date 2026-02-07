@@ -44,6 +44,7 @@ function mapSuggestion(s: any): Suggestion {
     votes: s.votes || 0,
     votedBy: s.votedBy || [],
     createdBy: s.createdBy || s.created_by || '',
+    createdByName: s.createdByName || s.created_by_name || undefined,
     createdAt: s.createdAt || s.created_at || '',
     requirements: s.requirements || undefined,
     jiraSynced: s.jiraSynced || s.jira_synced || false,
