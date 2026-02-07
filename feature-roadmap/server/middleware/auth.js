@@ -17,9 +17,11 @@ const authenticate = async (req, res, next) => {
 
     // Get user from database
     const result = await db.query(
-      `SELECT u.*, o.name as organization_name, o.slug as organization_slug, o.plan as organization_plan
+      `SELECT u.*, o.name as organization_name, o.slug as organization_slug, o.plan as organization_plan,
+              p.allow_theme, p.allow_integrations, p.allow_embed, p.max_users
        FROM users u
        JOIN organizations o ON u.organization_id = o.id
+       LEFT JOIN plans p ON p.slug = o.plan
        WHERE u.id = $1`,
       [decoded.userId]
     );

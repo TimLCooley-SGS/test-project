@@ -20,6 +20,10 @@ interface Plan {
   stripe_price_yearly_id: string | null;
   is_active: boolean;
   sort_order: number;
+  allow_theme: boolean;
+  allow_integrations: boolean;
+  allow_embed: boolean;
+  max_users: number;
 }
 
 interface Payment {
@@ -49,6 +53,10 @@ const emptyForm = {
   price_yearly: 0,
   features: [] as PlanFeature[],
   sort_order: 0,
+  allow_theme: false,
+  allow_integrations: false,
+  allow_embed: false,
+  max_users: 0,
 };
 
 function PlansAndBilling(): React.ReactElement {
@@ -129,6 +137,10 @@ function PlansAndBilling(): React.ReactElement {
         typeof f === 'string' ? { text: f, included: true } : f
       ),
       sort_order: plan.sort_order,
+      allow_theme: plan.allow_theme || false,
+      allow_integrations: plan.allow_integrations || false,
+      allow_embed: plan.allow_embed || false,
+      max_users: plan.max_users || 0,
     });
     setShowForm(true);
   };
@@ -301,6 +313,45 @@ function PlansAndBilling(): React.ReactElement {
                     value={form.sort_order}
                     onChange={e => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })}
                   />
+                </div>
+              </div>
+
+              <div className="feature-gates-section">
+                <label className="section-label">Feature Gates</label>
+                <div className="feature-gates-grid">
+                  <label className="gate-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={form.allow_theme}
+                      onChange={e => setForm({ ...form, allow_theme: e.target.checked })}
+                    />
+                    <span>Theme Customization</span>
+                  </label>
+                  <label className="gate-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={form.allow_integrations}
+                      onChange={e => setForm({ ...form, allow_integrations: e.target.checked })}
+                    />
+                    <span>Integrations</span>
+                  </label>
+                  <label className="gate-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={form.allow_embed}
+                      onChange={e => setForm({ ...form, allow_embed: e.target.checked })}
+                    />
+                    <span>Embed Widget</span>
+                  </label>
+                  <div className="gate-input">
+                    <label>Max Users (0 = unlimited)</label>
+                    <input
+                      type="number"
+                      value={form.max_users}
+                      onChange={e => setForm({ ...form, max_users: parseInt(e.target.value) || 0 })}
+                      min={0}
+                    />
+                  </div>
                 </div>
               </div>
 

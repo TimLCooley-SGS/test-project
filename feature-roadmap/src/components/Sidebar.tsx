@@ -18,13 +18,14 @@ interface NavItemProps {
   label: string;
   collapsed: boolean;
   onClick?: () => void;
+  locked?: boolean;
 }
 
-function NavItem({ to, icon, label, collapsed, onClick }: NavItemProps): React.ReactElement {
+function NavItem({ to, icon, label, collapsed, onClick, locked }: NavItemProps): React.ReactElement {
   return (
     <NavLink
       to={to}
-      className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+      className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}${locked ? ' locked' : ''}`}
       title={collapsed ? label : undefined}
       onClick={onClick}
     >
@@ -32,6 +33,11 @@ function NavItem({ to, icon, label, collapsed, onClick }: NavItemProps): React.R
         <Icon name={icon} size={20} />
       </span>
       <span className="nav-label">{label}</span>
+      {locked && (
+        <span className="nav-lock-icon">
+          <Icon name="lock" size={14} />
+        </span>
+      )}
     </NavLink>
   );
 }
@@ -95,9 +101,9 @@ function Sidebar({ user, isMobileOpen, onMobileClose }: SidebarProps): React.Rea
               <h3 className="nav-title">Admin</h3>
               <NavItem to="/admin/categories" icon="tags" label="Categories" collapsed={collapsed} onClick={handleNavClick} />
               <NavItem to="/admin/users" icon="users" label="Users" collapsed={collapsed} onClick={handleNavClick} />
-              <NavItem to="/admin/theme" icon="palette" label="Theme" collapsed={collapsed} onClick={handleNavClick} />
-              <NavItem to="/admin/integrations" icon="link" label="Integrations" collapsed={collapsed} onClick={handleNavClick} />
-              <NavItem to="/admin/embed" icon="code" label="Embed" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/admin/theme" icon="palette" label="Theme" collapsed={collapsed} onClick={handleNavClick} locked={!user.isSuperAdmin && !user.planLimits?.allowTheme} />
+              <NavItem to="/admin/integrations" icon="link" label="Integrations" collapsed={collapsed} onClick={handleNavClick} locked={!user.isSuperAdmin && !user.planLimits?.allowIntegrations} />
+              <NavItem to="/admin/embed" icon="code" label="Embed" collapsed={collapsed} onClick={handleNavClick} locked={!user.isSuperAdmin && !user.planLimits?.allowEmbed} />
               <NavItem to="/admin/billing" icon="credit-card" label="Billing" collapsed={collapsed} onClick={handleNavClick} />
             </div>
           )}

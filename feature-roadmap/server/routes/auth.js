@@ -126,9 +126,11 @@ router.post('/login', async (req, res) => {
 
     // Find user by email
     const result = await db.query(
-      `SELECT u.*, o.name as organization_name, o.slug as organization_slug, o.plan as organization_plan
+      `SELECT u.*, o.name as organization_name, o.slug as organization_slug, o.plan as organization_plan,
+              p.allow_theme, p.allow_integrations, p.allow_embed, p.max_users
        FROM users u
        JOIN organizations o ON u.organization_id = o.id
+       LEFT JOIN plans p ON p.slug = o.plan
        WHERE u.email = $1 AND o.is_active = true`,
       [email.toLowerCase()]
     );
@@ -169,6 +171,12 @@ router.post('/login', async (req, res) => {
         customerValue: user.customer_value,
         company: user.company,
         avatarUrl: user.avatar_url || null,
+        planLimits: {
+          allowTheme: user.allow_theme ?? false,
+          allowIntegrations: user.allow_integrations ?? false,
+          allowEmbed: user.allow_embed ?? false,
+          maxUsers: user.max_users ?? 0,
+        },
       },
     });
   } catch (error) {
@@ -192,6 +200,12 @@ router.get('/me', authenticate, async (req, res) => {
       customerValue: req.user.customer_value,
       company: req.user.company,
       avatarUrl: req.user.avatar_url || null,
+      planLimits: {
+        allowTheme: req.user.allow_theme ?? false,
+        allowIntegrations: req.user.allow_integrations ?? false,
+        allowEmbed: req.user.allow_embed ?? false,
+        maxUsers: req.user.max_users ?? 0,
+      },
     },
   });
 });
@@ -217,6 +231,21 @@ router.post('/invite', authenticate, async (req, res) => {
 
     if (existing.rows.length > 0) {
       return res.status(400).json({ error: 'User already exists in this organization' });
+    }
+
+    // Enforce max_users limit from plan
+    const maxUsers = req.user.max_users ?? 0;
+    if (maxUsers > 0) {
+      const countResult = await db.query(
+        'SELECT COUNT(*) as count FROM users WHERE organization_id = $1',
+        [req.user.organization_id]
+      );
+      const currentCount = parseInt(countResult.rows[0].count);
+      if (currentCount >= maxUsers) {
+        return res.status(403).json({
+          error: `Your plan allows a maximum of ${maxUsers} users. Please upgrade to add more team members.`,
+        });
+      }
     }
 
     // Create user with temporary password (they should reset it)

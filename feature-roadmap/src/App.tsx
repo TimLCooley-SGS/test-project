@@ -25,6 +25,7 @@ import ResetPassword from './pages/ResetPassword';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import PublicNavbar from './components/PublicNavbar';
+import UpgradePrompt from './components/UpgradePrompt';
 import './App.css';
 
 function App(): React.ReactElement {
@@ -158,9 +159,21 @@ function App(): React.ReactElement {
                 <>
                   <Route path="/admin/categories" element={<Categories />} />
                   <Route path="/admin/users" element={<Users />} />
-                  <Route path="/admin/theme" element={<Theme />} />
-                  <Route path="/admin/integrations" element={<Integrations />} />
-                  <Route path="/admin/embed" element={<Embed user={user} />} />
+                  <Route path="/admin/theme" element={
+                    !user.isSuperAdmin && !user.planLimits?.allowTheme
+                      ? <UpgradePrompt featureName="Theme Customization" />
+                      : <Theme />
+                  } />
+                  <Route path="/admin/integrations" element={
+                    !user.isSuperAdmin && !user.planLimits?.allowIntegrations
+                      ? <UpgradePrompt featureName="Integrations" />
+                      : <Integrations />
+                  } />
+                  <Route path="/admin/embed" element={
+                    !user.isSuperAdmin && !user.planLimits?.allowEmbed
+                      ? <UpgradePrompt featureName="Embed Widget" />
+                      : <Embed user={user} />
+                  } />
                   <Route path="/admin/billing" element={<Billing />} />
                 </>
               )}

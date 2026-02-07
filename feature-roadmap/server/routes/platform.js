@@ -507,7 +507,7 @@ router.get('/plans', async (req, res) => {
 router.post('/plans', async (req, res) => {
   const stripe = await getStripeForRequest();
   try {
-    const { name, slug, description, price_monthly, price_yearly, features, sort_order } = req.body;
+    const { name, slug, description, price_monthly, price_yearly, features, sort_order, allow_theme, allow_integrations, allow_embed, max_users } = req.body;
 
     if (!name || !slug) {
       return res.status(400).json({ error: 'Name and slug are required' });
@@ -549,10 +549,10 @@ router.post('/plans', async (req, res) => {
     }
 
     const result = await db.query(
-      `INSERT INTO plans (name, slug, description, price_monthly, price_yearly, features, stripe_product_id, stripe_price_monthly_id, stripe_price_yearly_id, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO plans (name, slug, description, price_monthly, price_yearly, features, stripe_product_id, stripe_price_monthly_id, stripe_price_yearly_id, sort_order, allow_theme, allow_integrations, allow_embed, max_users)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING *`,
-      [name, slug, description || '', price_monthly || 0, price_yearly || 0, JSON.stringify(features || []), stripeProductId, stripeMonthlyPriceId, stripeYearlyPriceId, sort_order || 0]
+      [name, slug, description || '', price_monthly || 0, price_yearly || 0, JSON.stringify(features || []), stripeProductId, stripeMonthlyPriceId, stripeYearlyPriceId, sort_order || 0, allow_theme || false, allow_integrations || false, allow_embed || false, max_users || 0]
     );
 
     res.status(201).json(result.rows[0]);
@@ -570,7 +570,7 @@ router.patch('/plans/:id', async (req, res) => {
   const stripe = await getStripeForRequest();
   try {
     const { id } = req.params;
-    const { name, description, price_monthly, price_yearly, features, is_active, sort_order } = req.body;
+    const { name, description, price_monthly, price_yearly, features, is_active, sort_order, allow_theme, allow_integrations, allow_embed, max_users } = req.body;
 
     // Get current plan
     const current = await db.query('SELECT * FROM plans WHERE id = $1', [id]);
@@ -668,6 +668,10 @@ router.patch('/plans/:id', async (req, res) => {
         stripe_product_id = COALESCE($8, stripe_product_id),
         stripe_price_monthly_id = $9,
         stripe_price_yearly_id = $10,
+        allow_theme = COALESCE($12, allow_theme),
+        allow_integrations = COALESCE($13, allow_integrations),
+        allow_embed = COALESCE($14, allow_embed),
+        max_users = COALESCE($15, max_users),
         updated_at = NOW()
       WHERE id = $11 RETURNING *`,
       [
@@ -678,6 +682,10 @@ router.patch('/plans/:id', async (req, res) => {
         is_active !== undefined ? is_active : null,
         sort_order !== undefined ? sort_order : null,
         stripeProductId, stripeMonthlyPriceId, stripeYearlyPriceId, id,
+        allow_theme !== undefined ? allow_theme : null,
+        allow_integrations !== undefined ? allow_integrations : null,
+        allow_embed !== undefined ? allow_embed : null,
+        max_users !== undefined ? max_users : null,
       ]
     );
 

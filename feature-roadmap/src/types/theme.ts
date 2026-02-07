@@ -79,6 +79,12 @@ export interface User {
   organizationId?: string;
   organizationName?: string;
   organizationSlug?: string;
+  planLimits?: {
+    allowTheme: boolean;
+    allowIntegrations: boolean;
+    allowEmbed: boolean;
+    maxUsers: number;
+  };
 }
 
 // Suggestion types
