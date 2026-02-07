@@ -101,6 +101,9 @@ function PlansAndBilling(): React.ReactElement {
     try {
       const updated = await api.updateStripeMode(newMode);
       setStripeMode(updated);
+      // Reload payments to show data for the new mode
+      const paymentsData = await api.fetchPlatformPayments();
+      setPayments(paymentsData);
     } catch (err: any) {
       alert(err.message || 'Failed to switch Stripe mode');
     } finally {
@@ -385,6 +388,30 @@ function PlansAndBilling(): React.ReactElement {
       )}
 
       {tab === 'payments' && (
+        <>
+        {stripeMode && (
+          <div className="plans-toolbar">
+            <div />
+            <div className="stripe-mode-toggle">
+              <div className="stripe-mode-pills">
+                <button
+                  className={`stripe-mode-pill test ${stripeMode.mode === 'test' ? 'active' : ''}`}
+                  onClick={() => handleModeSwitch('test')}
+                  disabled={switchingMode}
+                >
+                  Test
+                </button>
+                <button
+                  className={`stripe-mode-pill live ${stripeMode.mode === 'live' ? 'active' : ''}`}
+                  onClick={() => handleModeSwitch('live')}
+                  disabled={switchingMode}
+                >
+                  Live
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="platform-payments-table-wrap">
           {payments.length === 0 ? (
             <div className="empty-state">No payments recorded</div>
@@ -423,6 +450,7 @@ function PlansAndBilling(): React.ReactElement {
             </table>
           )}
         </div>
+        </>
       )}
     </div>
   );

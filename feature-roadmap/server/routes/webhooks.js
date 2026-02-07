@@ -38,10 +38,10 @@ router.post(
           await handleCheckoutCompleted(event.data.object, stripe);
           break;
         case 'invoice.paid':
-          await handleInvoicePaid(event.data.object);
+          await handleInvoicePaid(event.data.object, mode);
           break;
         case 'invoice.payment_failed':
-          await handleInvoiceFailed(event.data.object);
+          await handleInvoiceFailed(event.data.object, mode);
           break;
         case 'customer.subscription.updated':
           await handleSubscriptionUpdated(event.data.object);
@@ -97,15 +97,15 @@ async function handleCheckoutCompleted(session, stripe) {
   await db.query('UPDATE organizations SET plan = $1 WHERE id = $2', [planSlug, orgId]);
 }
 
-async function handleInvoicePaid(invoice) {
+async function handleInvoicePaid(invoice, stripeMode) {
   const customerId = invoice.customer;
   const org = await findOrgByCustomer(customerId);
   if (!org) return;
 
   // Insert payment record
   await db.query(
-    `INSERT INTO payments (organization_id, stripe_invoice_id, stripe_charge_id, amount_cents, currency, status, plan_name, invoice_url)
-     VALUES ($1, $2, $3, $4, $5, 'paid', $6, $7)`,
+    `INSERT INTO payments (organization_id, stripe_invoice_id, stripe_charge_id, amount_cents, currency, status, plan_name, invoice_url, stripe_mode)
+     VALUES ($1, $2, $3, $4, $5, 'paid', $6, $7, $8)`,
     [
       org.id,
       invoice.id,
@@ -114,6 +114,7 @@ async function handleInvoicePaid(invoice) {
       invoice.currency,
       invoice.lines?.data?.[0]?.description || 'Subscription',
       invoice.hosted_invoice_url,
+      stripeMode || 'test',
     ]
   );
 
@@ -126,14 +127,14 @@ async function handleInvoicePaid(invoice) {
   }
 }
 
-async function handleInvoiceFailed(invoice) {
+async function handleInvoiceFailed(invoice, stripeMode) {
   const customerId = invoice.customer;
   const org = await findOrgByCustomer(customerId);
   if (!org) return;
 
   await db.query(
-    `INSERT INTO payments (organization_id, stripe_invoice_id, stripe_charge_id, amount_cents, currency, status, plan_name, invoice_url)
-     VALUES ($1, $2, $3, $4, $5, 'failed', $6, $7)`,
+    `INSERT INTO payments (organization_id, stripe_invoice_id, stripe_charge_id, amount_cents, currency, status, plan_name, invoice_url, stripe_mode)
+     VALUES ($1, $2, $3, $4, $5, 'failed', $6, $7, $8)`,
     [
       org.id,
       invoice.id,
@@ -142,6 +143,7 @@ async function handleInvoiceFailed(invoice) {
       invoice.currency,
       invoice.lines?.data?.[0]?.description || 'Subscription',
       invoice.hosted_invoice_url,
+      stripeMode || 'test',
     ]
   );
 

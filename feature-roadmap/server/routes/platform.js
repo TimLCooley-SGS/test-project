@@ -755,15 +755,18 @@ router.put('/stripe-mode', async (req, res) => {
 // PAYMENTS (Cross-org)
 // ========================================
 
-// GET /api/platform/payments — cross-org payment history
+// GET /api/platform/payments — cross-org payment history filtered by stripe mode
 router.get('/payments', async (req, res) => {
   try {
+    const mode = await getMode();
     const result = await db.query(
       `SELECT p.*, o.name as organization_name
        FROM payments p
        JOIN organizations o ON p.organization_id = o.id
+       WHERE p.stripe_mode = $1
        ORDER BY p.created_at DESC
-       LIMIT 100`
+       LIMIT 100`,
+      [mode]
     );
     res.json(result.rows);
   } catch (error) {
