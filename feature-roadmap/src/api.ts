@@ -251,6 +251,12 @@ async function publicFetch(path: string, options: RequestInit = {}): Promise<any
   return response.json();
 }
 
+// --- Public Platform Branding ---
+
+export async function fetchPlatformBranding(): Promise<{ logo: string | null; favicon: string | null; brandName: string | null }> {
+  return publicFetch('/platform/branding');
+}
+
 // --- Public Embed API ---
 
 export async function fetchEmbedConfig(slug: string): Promise<any> {

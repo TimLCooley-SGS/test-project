@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import defaultTheme from '../theme/defaultTheme';
 import { lightPreset, darkPreset } from '../theme/presets';
 import { Theme, ThemeContextType, DeepPartial } from '../types/theme';
+import { fetchPlatformBranding } from '../api';
 
 const THEME_STORAGE_KEY = 'app_theme';
 
@@ -96,6 +97,25 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     return defaultTheme;
   });
 
+  // Load platform branding as defaults (org-level localStorage overrides take priority)
+  useEffect(() => {
+    fetchPlatformBranding()
+      .then((branding) => {
+        setTheme((prev) => {
+          const logos = { ...prev.logos };
+          if (!logos.main && branding.logo) logos.main = branding.logo;
+          if (!logos.favicon && branding.favicon) logos.favicon = branding.favicon;
+          if (logos.brandName === defaultTheme.logos.brandName && branding.brandName) {
+            logos.brandName = branding.brandName;
+          }
+          return { ...prev, logos };
+        });
+      })
+      .catch(() => {
+        // Platform branding not available — use defaults
+      });
+  }, []);
+
   // Apply theme to DOM whenever it changes
   useEffect(() => {
     applyThemeToDOM(theme);
@@ -117,7 +137,19 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   const resetTheme = useCallback(() => {
+    // Reset to defaults, then re-apply platform branding
     setTheme(defaultTheme);
+    fetchPlatformBranding()
+      .then((branding) => {
+        setTheme((prev) => {
+          const logos = { ...prev.logos };
+          if (branding.logo) logos.main = branding.logo;
+          if (branding.favicon) logos.favicon = branding.favicon;
+          if (branding.brandName) logos.brandName = branding.brandName;
+          return { ...prev, logos };
+        });
+      })
+      .catch(() => {});
   }, []);
 
   const loadTheme = useCallback((newTheme: Theme) => {

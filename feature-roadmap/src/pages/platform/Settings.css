@@ -293,3 +293,94 @@
   color: var(--color-textSecondary);
   font-size: 0.9rem;
 }
+
+/* Platform Branding */
+.branding-subtitle {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.branding-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  padding: 20px;
+}
+
+.branding-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.branding-field:last-child {
+  grid-column: 1 / -1;
+}
+
+.branding-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.branding-upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.branding-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.branding-preview img {
+  max-width: 120px;
+  max-height: 60px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  object-fit: contain;
+  background: var(--color-background);
+  padding: 4px;
+}
+
+.favicon-preview img {
+  max-width: 40px;
+  max-height: 40px;
+}
+
+.branding-placeholder {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.branding-hint {
+  font-size: 0.75rem;
+  color: var(--color-textSecondary);
+}
+
+.branding-actions {
+  margin-top: 16px;
+}
+
+.file-input {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .branding-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .branding-field:last-child {
+    grid-column: auto;
+  }
+}

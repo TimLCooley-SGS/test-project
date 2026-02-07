@@ -9,6 +9,25 @@ if (process.env.SENDGRID_API_KEY) {
 
 const router = express.Router();
 
+// Public branding endpoint (no auth required)
+router.get('/branding', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT key, value FROM platform_settings WHERE key IN ('platform_logo', 'platform_favicon', 'platform_brand_name')`
+    );
+    const map = {};
+    result.rows.forEach(r => { map[r.key] = r.value; });
+    res.json({
+      logo: map['platform_logo'] || null,
+      favicon: map['platform_favicon'] || null,
+      brandName: map['platform_brand_name'] || null,
+    });
+  } catch (error) {
+    console.error('Platform branding error:', error);
+    res.status(500).json({ error: 'Failed to fetch branding' });
+  }
+});
+
 // All platform routes require super admin
 router.use(authenticate, requireSuperAdmin);
 

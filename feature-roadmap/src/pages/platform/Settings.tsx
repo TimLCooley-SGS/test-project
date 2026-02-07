@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as api from '../../api';
 import './Settings.css';
 
@@ -19,6 +19,33 @@ interface EmailTemplate {
   updated_at: string;
 }
 
+function resizeImage(file: File, maxWidth: number, maxHeight: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function Settings(): React.ReactElement {
   const [settings, setSettings] = useState<Setting[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
@@ -35,6 +62,15 @@ function Settings(): React.ReactElement {
   const [tplBody, setTplBody] = useState('');
   const [testMessage, setTestMessage] = useState('');
 
+  // Branding state
+  const [brandLogo, setBrandLogo] = useState<string | null>(null);
+  const [brandFavicon, setBrandFavicon] = useState<string | null>(null);
+  const [brandName, setBrandName] = useState('');
+  const [brandSaving, setBrandSaving] = useState(false);
+  const [brandMessage, setBrandMessage] = useState('');
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
+
   const loadData = async () => {
     try {
       const [s, t] = await Promise.all([
@@ -43,6 +79,14 @@ function Settings(): React.ReactElement {
       ]);
       setSettings(s);
       setTemplates(t);
+
+      // Load branding values from settings
+      const logoSetting = s.find((x: Setting) => x.key === 'platform_logo');
+      const faviconSetting = s.find((x: Setting) => x.key === 'platform_favicon');
+      const nameSetting = s.find((x: Setting) => x.key === 'platform_brand_name');
+      if (logoSetting) setBrandLogo(logoSetting.value);
+      if (faviconSetting) setBrandFavicon(faviconSetting.value);
+      if (nameSetting) setBrandName(nameSetting.value);
     } catch (err) {
       console.error('Failed to load settings:', err);
     } finally {
@@ -116,6 +160,48 @@ function Settings(): React.ReactElement {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const resized = await resizeImage(file, 256, 256);
+      setBrandLogo(resized);
+    } catch (err) {
+      console.error('Failed to resize logo:', err);
+    }
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const resized = await resizeImage(file, 64, 64);
+      setBrandFavicon(resized);
+    } catch (err) {
+      console.error('Failed to resize favicon:', err);
+    }
+  };
+
+  const handleSaveBranding = async () => {
+    setBrandSaving(true);
+    setBrandMessage('');
+    try {
+      await Promise.all([
+        api.updatePlatformSetting('platform_logo', brandLogo || '', 'Platform logo (data URL)'),
+        api.updatePlatformSetting('platform_favicon', brandFavicon || '', 'Platform favicon (data URL)'),
+        api.updatePlatformSetting('platform_brand_name', brandName, 'Platform brand name'),
+      ]);
+      setBrandMessage('Branding saved successfully');
+      setTimeout(() => setBrandMessage(''), 3000);
+    } catch (err) {
+      console.error('Failed to save branding:', err);
+      setBrandMessage('Failed to save branding');
+      setTimeout(() => setBrandMessage(''), 3000);
+    } finally {
+      setBrandSaving(false);
+    }
+  };
+
   if (loading) return <div className="platform-page"><p>Loading...</p></div>;
 
   return (
@@ -124,6 +210,64 @@ function Settings(): React.ReactElement {
         <h1>Platform Settings</h1>
         <p>Configure platform-wide settings and email templates</p>
       </div>
+
+      {/* Platform Branding Section */}
+      <section className="settings-section">
+        <h2>Platform Branding</h2>
+        <p className="branding-subtitle">Set the default logo, favicon, and brand name for all users. Org admins can override these via the Theme editor.</p>
+        {brandMessage && <div className="test-message">{brandMessage}</div>}
+        <div className="branding-grid">
+          <div className="branding-field">
+            <label>Logo</label>
+            <div className="branding-upload">
+              {brandLogo ? (
+                <div className="branding-preview">
+                  <img src={brandLogo} alt="Platform logo" />
+                  <button className="cancel-btn" onClick={() => { setBrandLogo(null); if (logoInputRef.current) logoInputRef.current.value = ''; }}>Remove</button>
+                </div>
+              ) : (
+                <div className="branding-placeholder">No logo set</div>
+              )}
+              <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="file-input" />
+              <button className="edit-btn" onClick={() => logoInputRef.current?.click()}>Upload Logo</button>
+            </div>
+            <span className="branding-hint">Max 256px wide. Used in navbar and landing page.</span>
+          </div>
+
+          <div className="branding-field">
+            <label>Favicon</label>
+            <div className="branding-upload">
+              {brandFavicon ? (
+                <div className="branding-preview favicon-preview">
+                  <img src={brandFavicon} alt="Platform favicon" />
+                  <button className="cancel-btn" onClick={() => { setBrandFavicon(null); if (faviconInputRef.current) faviconInputRef.current.value = ''; }}>Remove</button>
+                </div>
+              ) : (
+                <div className="branding-placeholder">No favicon set</div>
+              )}
+              <input ref={faviconInputRef} type="file" accept="image/*" onChange={handleFaviconUpload} className="file-input" />
+              <button className="edit-btn" onClick={() => faviconInputRef.current?.click()}>Upload Favicon</button>
+            </div>
+            <span className="branding-hint">Resized to 64x64. Shown in browser tab.</span>
+          </div>
+
+          <div className="branding-field">
+            <label>Brand Name</label>
+            <input
+              className="setting-input"
+              value={brandName}
+              onChange={e => setBrandName(e.target.value)}
+              placeholder="e.g. Feature Roadmap"
+            />
+            <span className="branding-hint">Displayed next to the logo in the navbar.</span>
+          </div>
+        </div>
+        <div className="branding-actions">
+          <button className="save-btn" onClick={handleSaveBranding} disabled={brandSaving}>
+            {brandSaving ? 'Saving...' : 'Save Branding'}
+          </button>
+        </div>
+      </section>
 
       {/* Settings Section */}
       <section className="settings-section">
