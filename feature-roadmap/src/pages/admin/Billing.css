@@ -1,0 +1,367 @@
+.billing-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.billing-page .page-header {
+  margin-bottom: var(--card-padding);
+}
+
+.billing-page .page-header h1 {
+  font-size: 1.75rem;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  font-weight: var(--font-weight-heading);
+}
+
+.billing-page .page-header p {
+  color: var(--color-textSecondary);
+  font-size: 0.95rem;
+}
+
+/* Alert banners */
+.billing-alert {
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  margin-bottom: var(--card-padding);
+  font-size: 0.9rem;
+}
+
+.billing-alert.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.billing-alert.info {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+/* Current plan card */
+.current-plan-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  padding: var(--card-padding);
+  margin-bottom: var(--card-padding);
+}
+
+.current-plan-card h2 {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 16px;
+  font-weight: var(--font-weight-heading);
+}
+
+.plan-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.plan-name-display {
+  font-size: 1.3rem;
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text);
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.trialing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.past_due {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.canceled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.plan-meta {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.plan-meta span {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.plan-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background: var(--color-hover);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-border);
+}
+
+/* Plan selection */
+.plan-selection {
+  margin-bottom: var(--card-padding);
+}
+
+.plan-selection h2 {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 16px;
+  font-weight: var(--font-weight-heading);
+}
+
+.interval-toggle {
+  display: flex;
+  background: var(--color-hover);
+  border-radius: var(--border-radius);
+  padding: 3px;
+  margin-bottom: 20px;
+  width: fit-content;
+}
+
+.interval-toggle button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: calc(var(--border-radius) - 2px);
+  background: transparent;
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.interval-toggle button.active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.plan-card {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  padding: var(--card-padding);
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-card.current {
+  border-color: var(--color-primary);
+}
+
+.plan-card-name {
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.plan-card-description {
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.plan-card-price {
+  font-size: 2rem;
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.plan-card-price span {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-textSecondary);
+}
+
+.plan-card-interval {
+  color: var(--color-textSecondary);
+  font-size: 0.8rem;
+  margin-bottom: 16px;
+}
+
+.plan-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  flex: 1;
+}
+
+.plan-card-features li {
+  padding: 4px 0;
+  color: var(--color-textSecondary);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-card-features li.disabled {
+  color: var(--color-textSecondary);
+  opacity: 0.7;
+}
+
+.plan-card .btn {
+  width: 100%;
+  text-align: center;
+}
+
+.plan-card .btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Payment history */
+.payment-history {
+  margin-top: var(--card-padding);
+}
+
+.payment-history h2 {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 16px;
+  font-weight: var(--font-weight-heading);
+}
+
+.payments-table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  overflow-x: auto;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payments-table th,
+.payments-table td {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+}
+
+.payments-table th {
+  background: var(--color-hover);
+  color: var(--color-textSecondary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.payments-table td {
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.payments-table tr:last-child td {
+  border-bottom: none;
+}
+
+.payment-status {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.payment-status.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payment-status.failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.payment-status.refunded {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.invoice-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.invoice-link:hover {
+  text-decoration: underline;
+}
+
+.empty-payments {
+  padding: 40px;
+  text-align: center;
+  color: var(--color-textSecondary);
+}
+
+@media (max-width: 600px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-actions {
+    flex-direction: column;
+  }
+
+  .plan-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

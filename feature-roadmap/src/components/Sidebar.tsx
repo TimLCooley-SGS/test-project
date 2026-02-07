@@ -98,6 +98,7 @@ function Sidebar({ user, isMobileOpen, onMobileClose }: SidebarProps): React.Rea
               <NavItem to="/admin/theme" icon="palette" label="Theme" collapsed={collapsed} onClick={handleNavClick} />
               <NavItem to="/admin/integrations" icon="link" label="Integrations" collapsed={collapsed} onClick={handleNavClick} />
               <NavItem to="/admin/embed" icon="code" label="Embed" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/admin/billing" icon="credit-card" label="Billing" collapsed={collapsed} onClick={handleNavClick} />
             </div>
           )}
 
@@ -108,6 +109,7 @@ function Sidebar({ user, isMobileOpen, onMobileClose }: SidebarProps): React.Rea
               <NavItem to="/platform/users" icon="users" label="Users" collapsed={collapsed} onClick={handleNavClick} />
               <NavItem to="/platform/settings" icon="settings" label="Settings" collapsed={collapsed} onClick={handleNavClick} />
               <NavItem to="/platform/analytics" icon="bar-chart" label="Analytics" collapsed={collapsed} onClick={handleNavClick} />
+              <NavItem to="/platform/billing" icon="dollar-sign" label="Plans & Billing" collapsed={collapsed} onClick={handleNavClick} />
             </div>
           )}
         </nav>

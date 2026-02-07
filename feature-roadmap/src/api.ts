@@ -374,3 +374,66 @@ export async function sendTestEmail(id: string): Promise<{ message: string }> {
 export async function fetchPlatformAnalytics(): Promise<any> {
   return apiFetch('/platform/analytics');
 }
+
+// --- Public Billing ---
+
+export async function fetchPublicPlans(): Promise<any[]> {
+  return publicFetch('/billing/public-plans');
+}
+
+// --- Billing (Org Admin) ---
+
+export async function fetchBillingPlans(): Promise<any[]> {
+  return apiFetch('/billing/plans');
+}
+
+export async function fetchBillingSubscription(): Promise<any> {
+  return apiFetch('/billing/subscription');
+}
+
+export async function createCheckoutSession(planId: string, interval: 'monthly' | 'yearly' = 'monthly'): Promise<{ url: string }> {
+  return apiFetch('/billing/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ planId, interval }),
+  });
+}
+
+export async function createPortalSession(): Promise<{ url: string }> {
+  return apiFetch('/billing/portal', { method: 'POST' });
+}
+
+export async function fetchBillingInvoices(): Promise<any[]> {
+  return apiFetch('/billing/invoices');
+}
+
+// --- Platform Plans & Billing (Super Admin) ---
+
+export async function fetchPlatformPlans(): Promise<any[]> {
+  return apiFetch('/platform/plans');
+}
+
+export async function createPlatformPlan(plan: {
+  name: string; slug: string; description?: string;
+  price_monthly: number; price_yearly: number;
+  features?: string[]; sort_order?: number;
+}): Promise<any> {
+  return apiFetch('/platform/plans', {
+    method: 'POST',
+    body: JSON.stringify(plan),
+  });
+}
+
+export async function updatePlatformPlan(id: string, updates: any): Promise<any> {
+  return apiFetch(`/platform/plans/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function deletePlatformPlan(id: string): Promise<void> {
+  await apiFetch(`/platform/plans/${id}`, { method: 'DELETE' });
+}
+
+export async function fetchPlatformPayments(): Promise<any[]> {
+  return apiFetch('/platform/payments');
+}

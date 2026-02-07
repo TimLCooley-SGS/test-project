@@ -326,4 +326,227 @@ router.get('/analytics', async (req, res) => {
   }
 });
 
+// ========================================
+// PLANS (Billing)
+// ========================================
+
+// GET /api/platform/plans — all plans including inactive
+router.get('/plans', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM plans ORDER BY sort_order ASC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Platform plans error:', error);
+    res.status(500).json({ error: 'Failed to fetch plans' });
+  }
+});
+
+// POST /api/platform/plans — create plan + Stripe product/prices
+router.post('/plans', async (req, res) => {
+  const stripe = require('../lib/stripe');
+  try {
+    const { name, slug, description, price_monthly, price_yearly, features, sort_order } = req.body;
+
+    if (!name || !slug) {
+      return res.status(400).json({ error: 'Name and slug are required' });
+    }
+
+    let stripeProductId = null;
+    let stripeMonthlyPriceId = null;
+    let stripeYearlyPriceId = null;
+
+    if (stripe) {
+      // Create Stripe product
+      const product = await stripe.products.create({
+        name,
+        description: description || undefined,
+      });
+      stripeProductId = product.id;
+
+      // Create monthly price if > 0
+      if (price_monthly > 0) {
+        const monthlyPrice = await stripe.prices.create({
+          product: product.id,
+          unit_amount: price_monthly,
+          currency: 'usd',
+          recurring: { interval: 'month' },
+        });
+        stripeMonthlyPriceId = monthlyPrice.id;
+      }
+
+      // Create yearly price if > 0
+      if (price_yearly > 0) {
+        const yearlyPrice = await stripe.prices.create({
+          product: product.id,
+          unit_amount: price_yearly,
+          currency: 'usd',
+          recurring: { interval: 'year' },
+        });
+        stripeYearlyPriceId = yearlyPrice.id;
+      }
+    }
+
+    const result = await db.query(
+      `INSERT INTO plans (name, slug, description, price_monthly, price_yearly, features, stripe_product_id, stripe_price_monthly_id, stripe_price_yearly_id, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING *`,
+      [name, slug, description || '', price_monthly || 0, price_yearly || 0, JSON.stringify(features || []), stripeProductId, stripeMonthlyPriceId, stripeYearlyPriceId, sort_order || 0]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Platform plan create error:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'A plan with that slug already exists' });
+    }
+    res.status(500).json({ error: error.message || 'Failed to create plan' });
+  }
+});
+
+// PATCH /api/platform/plans/:id — update plan + Stripe sync
+router.patch('/plans/:id', async (req, res) => {
+  const stripe = require('../lib/stripe');
+  try {
+    const { id } = req.params;
+    const { name, description, price_monthly, price_yearly, features, is_active, sort_order } = req.body;
+
+    // Get current plan
+    const current = await db.query('SELECT * FROM plans WHERE id = $1', [id]);
+    if (current.rows.length === 0) {
+      return res.status(404).json({ error: 'Plan not found' });
+    }
+    const plan = current.rows[0];
+
+    let stripeMonthlyPriceId = plan.stripe_price_monthly_id;
+    let stripeYearlyPriceId = plan.stripe_price_yearly_id;
+
+    if (stripe && plan.stripe_product_id) {
+      // Update product name/description
+      if (name || description !== undefined) {
+        await stripe.products.update(plan.stripe_product_id, {
+          name: name || plan.name,
+          description: description !== undefined ? description : plan.description,
+        });
+      }
+
+      // If monthly price changed, create new price and archive old
+      if (price_monthly !== undefined && price_monthly !== plan.price_monthly) {
+        if (price_monthly > 0) {
+          const newPrice = await stripe.prices.create({
+            product: plan.stripe_product_id,
+            unit_amount: price_monthly,
+            currency: 'usd',
+            recurring: { interval: 'month' },
+          });
+          if (plan.stripe_price_monthly_id) {
+            await stripe.prices.update(plan.stripe_price_monthly_id, { active: false });
+          }
+          stripeMonthlyPriceId = newPrice.id;
+        } else {
+          if (plan.stripe_price_monthly_id) {
+            await stripe.prices.update(plan.stripe_price_monthly_id, { active: false });
+          }
+          stripeMonthlyPriceId = null;
+        }
+      }
+
+      // If yearly price changed, create new price and archive old
+      if (price_yearly !== undefined && price_yearly !== plan.price_yearly) {
+        if (price_yearly > 0) {
+          const newPrice = await stripe.prices.create({
+            product: plan.stripe_product_id,
+            unit_amount: price_yearly,
+            currency: 'usd',
+            recurring: { interval: 'year' },
+          });
+          if (plan.stripe_price_yearly_id) {
+            await stripe.prices.update(plan.stripe_price_yearly_id, { active: false });
+          }
+          stripeYearlyPriceId = newPrice.id;
+        } else {
+          if (plan.stripe_price_yearly_id) {
+            await stripe.prices.update(plan.stripe_price_yearly_id, { active: false });
+          }
+          stripeYearlyPriceId = null;
+        }
+      }
+    }
+
+    const result = await db.query(
+      `UPDATE plans SET
+        name = COALESCE($1, name),
+        description = COALESCE($2, description),
+        price_monthly = COALESCE($3, price_monthly),
+        price_yearly = COALESCE($4, price_yearly),
+        features = COALESCE($5, features),
+        is_active = COALESCE($6, is_active),
+        sort_order = COALESCE($7, sort_order),
+        stripe_price_monthly_id = $8,
+        stripe_price_yearly_id = $9,
+        updated_at = NOW()
+      WHERE id = $10 RETURNING *`,
+      [
+        name || null, description !== undefined ? description : null,
+        price_monthly !== undefined ? price_monthly : null,
+        price_yearly !== undefined ? price_yearly : null,
+        features ? JSON.stringify(features) : null,
+        is_active !== undefined ? is_active : null,
+        sort_order !== undefined ? sort_order : null,
+        stripeMonthlyPriceId, stripeYearlyPriceId, id,
+      ]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Platform plan update error:', error);
+    res.status(500).json({ error: 'Failed to update plan' });
+  }
+});
+
+// DELETE /api/platform/plans/:id — soft-deactivate plan
+router.delete('/plans/:id', async (req, res) => {
+  const stripe = require('../lib/stripe');
+  try {
+    const { id } = req.params;
+
+    const current = await db.query('SELECT * FROM plans WHERE id = $1', [id]);
+    if (current.rows.length === 0) {
+      return res.status(404).json({ error: 'Plan not found' });
+    }
+    const plan = current.rows[0];
+
+    // Archive in Stripe
+    if (stripe && plan.stripe_product_id) {
+      await stripe.products.update(plan.stripe_product_id, { active: false });
+    }
+
+    await db.query('UPDATE plans SET is_active = false, updated_at = NOW() WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Platform plan delete error:', error);
+    res.status(500).json({ error: 'Failed to deactivate plan' });
+  }
+});
+
+// ========================================
+// PAYMENTS (Cross-org)
+// ========================================
+
+// GET /api/platform/payments — cross-org payment history
+router.get('/payments', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT p.*, o.name as organization_name
+       FROM payments p
+       JOIN organizations o ON p.organization_id = o.id
+       ORDER BY p.created_at DESC
+       LIMIT 100`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Platform payments error:', error);
+    res.status(500).json({ error: 'Failed to fetch payments' });
+  }
+});
+
 module.exports = router;

@@ -11,12 +11,17 @@ const categoriesRoutes = require('./routes/categories');
 const usersRoutes = require('./routes/users');
 const embedRoutes = require('./routes/embed');
 const platformRoutes = require('./routes/platform');
+const webhookRoutes = require('./routes/webhooks');
+const billingRoutes = require('./routes/billing');
 
 const app = express();
 const PORT = process.env.BACKEND_PORT || process.env.PORT || 5000;
 
 // Trust proxy for correct req.ip behind reverse proxies
 app.set('trust proxy', 1);
+
+// Stripe webhook route MUST come before express.json() — needs raw body
+app.use('/api/webhooks', webhookRoutes);
 
 // Permissive CORS for public embed routes
 app.use('/api/embed', cors({ origin: true, credentials: false }));
@@ -48,6 +53,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/embed', embedRoutes);
 app.use('/api/platform', platformRoutes);
+app.use('/api/billing', billingRoutes);
 
 // 404 handler
 app.use('/api/*', (req, res) => {

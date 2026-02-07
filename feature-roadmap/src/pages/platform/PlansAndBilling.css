@@ -1,0 +1,433 @@
+.plans-billing-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.plans-billing-page .page-header {
+  margin-bottom: var(--card-padding);
+}
+
+.plans-billing-page .page-header h1 {
+  font-size: 1.75rem;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  font-weight: var(--font-weight-heading);
+}
+
+.plans-billing-page .page-header p {
+  color: var(--color-textSecondary);
+  font-size: 0.95rem;
+}
+
+/* Tabs */
+.billing-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: var(--card-padding);
+  gap: 0;
+}
+
+.billing-tab {
+  padding: 10px 24px;
+  border: none;
+  background: none;
+  color: var(--color-textSecondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+}
+
+.billing-tab:hover {
+  color: var(--color-text);
+}
+
+.billing-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* Plans table */
+.plans-table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  overflow-x: auto;
+  margin-bottom: var(--card-padding);
+}
+
+.plans-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.plans-table th,
+.plans-table td {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+}
+
+.plans-table th {
+  background: var(--color-hover);
+  color: var(--color-textSecondary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.plans-table td {
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.plans-table tr:last-child td {
+  border-bottom: none;
+}
+
+.plan-active-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.plan-active-badge.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.plan-active-badge.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.plan-actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.plan-actions-cell button {
+  padding: 6px 12px;
+  border-radius: var(--border-radius);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-edit:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-deactivate {
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+
+.btn-deactivate:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+/* Plan form */
+.plan-form-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  padding: var(--card-padding);
+  margin-bottom: var(--card-padding);
+}
+
+.plan-form-card h3 {
+  font-size: 1rem;
+  color: var(--color-text);
+  margin-bottom: 16px;
+  font-weight: var(--font-weight-heading);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Features editor */
+.features-editor {
+  margin-top: 16px;
+}
+
+.features-editor label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.feature-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.feature-item input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.feature-item input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Feature included toggle */
+.feature-included-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.feature-included-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.feature-check-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.feature-check-icon.included {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.feature-check-icon.excluded {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.feature-remove {
+  padding: 8px 12px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  color: var(--color-error);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.feature-remove:hover {
+  background: var(--color-error);
+  color: white;
+  border-color: var(--color-error);
+}
+
+.add-feature-btn {
+  padding: 8px 16px;
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--border-radius);
+  color: var(--color-textSecondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.add-feature-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.form-actions .btn {
+  padding: 10px 24px;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.form-actions .btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.form-actions .btn-primary:hover {
+  opacity: 0.9;
+}
+
+.form-actions .btn-cancel {
+  background: var(--color-hover);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.form-actions .btn-cancel:hover {
+  background: var(--color-border);
+}
+
+/* Payments table (reuse from billing) */
+.platform-payments-table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--border-radius) + 4px);
+  overflow-x: auto;
+}
+
+.platform-payments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.platform-payments-table th,
+.platform-payments-table td {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+}
+
+.platform-payments-table th {
+  background: var(--color-hover);
+  color: var(--color-textSecondary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.platform-payments-table td {
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.platform-payments-table tr:last-child td {
+  border-bottom: none;
+}
+
+.payment-status {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.payment-status.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payment-status.failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--color-textSecondary);
+}
+
+.add-plan-btn {
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: var(--card-padding);
+}
+
+.add-plan-btn:hover {
+  opacity: 0.9;
+}
+
+.invoice-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.invoice-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-actions-cell {
+    flex-direction: column;
+  }
+}

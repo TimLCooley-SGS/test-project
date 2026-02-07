@@ -35,6 +35,8 @@ import {
   ChevronRight,
   Menu,
   BarChart3,
+  CreditCard,
+  DollarSign,
   LucideIcon,
 } from 'lucide-react';
 
@@ -75,6 +77,8 @@ const iconMap: Record<string, LucideIcon> = {
   'chevron-right': ChevronRight,
   menu: Menu,
   'bar-chart': BarChart3,
+  'credit-card': CreditCard,
+  'dollar-sign': DollarSign,
 };
 
 export type IconName = keyof typeof iconMap;

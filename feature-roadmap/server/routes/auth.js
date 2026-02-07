@@ -63,7 +63,7 @@ router.post('/register', async (req, res) => {
 
     await client.query(
       `INSERT INTO organizations (id, name, slug, plan, trial_ends_at)
-       VALUES ($1, $2, $3, 'pro', $4)`,
+       VALUES ($1, $2, $3, 'starter', $4)`,
       [orgId, organizationName, slug, trialEndsAt]
     );
 
