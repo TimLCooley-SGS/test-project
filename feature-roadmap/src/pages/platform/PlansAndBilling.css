@@ -396,6 +396,16 @@
   color: var(--color-textSecondary);
 }
 
+/* Plans toolbar */
+.plans-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--card-padding);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .add-plan-btn {
   padding: 10px 20px;
   background: var(--color-primary);
@@ -405,11 +415,86 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  margin-bottom: var(--card-padding);
 }
 
 .add-plan-btn:hover {
   opacity: 0.9;
+}
+
+/* Stripe mode toggle */
+.stripe-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stripe-mode-pills {
+  display: flex;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.stripe-mode-pill {
+  padding: 7px 18px;
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-textSecondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stripe-mode-pill:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stripe-mode-pill.test.active {
+  background: #059669;
+  color: white;
+}
+
+.stripe-mode-pill.live.active {
+  background: #d97706;
+  color: white;
+}
+
+.stripe-mode-pill:not(.active):hover {
+  background: var(--color-hover);
+}
+
+.stripe-key-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--color-textSecondary);
+}
+
+.key-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+.key-dot:first-child {
+  margin-left: 0;
+}
+
+.key-dot.configured {
+  background: #059669;
+}
+
+.key-dot.missing {
+  background: #d1d5db;
+}
+
+.key-label {
+  font-size: 0.7rem;
 }
 
 .invoice-link {

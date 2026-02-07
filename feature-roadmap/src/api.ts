@@ -437,3 +437,16 @@ export async function deletePlatformPlan(id: string): Promise<void> {
 export async function fetchPlatformPayments(): Promise<any[]> {
   return apiFetch('/platform/payments');
 }
+
+// --- Stripe Mode (Super Admin) ---
+
+export async function fetchStripeMode(): Promise<{ mode: 'test' | 'live'; testKeySet: boolean; liveKeySet: boolean }> {
+  return apiFetch('/platform/stripe-mode');
+}
+
+export async function updateStripeMode(mode: 'test' | 'live'): Promise<{ mode: 'test' | 'live'; testKeySet: boolean; liveKeySet: boolean }> {
+  return apiFetch('/platform/stripe-mode', {
+    method: 'PUT',
+    body: JSON.stringify({ mode }),
+  });
+}

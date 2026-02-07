@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db');
-const stripe = require('../lib/stripe');
+const { getStripeForRequest, getMode, getWebhookSecret } = require('../lib/stripe');
 
 const router = express.Router();
 
@@ -10,15 +10,17 @@ router.post(
   '/stripe',
   express.raw({ type: 'application/json' }),
   async (req, res) => {
+    const stripe = await getStripeForRequest();
     if (!stripe) {
       return res.status(503).json({ error: 'Stripe not configured' });
     }
 
     const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const mode = await getMode();
+    const webhookSecret = getWebhookSecret(mode);
 
     if (!webhookSecret) {
-      console.error('STRIPE_WEBHOOK_SECRET not set');
+      console.error('Stripe webhook secret not set for mode:', mode);
       return res.status(500).json({ error: 'Webhook secret not configured' });
     }
 
@@ -33,7 +35,7 @@ router.post(
     try {
       switch (event.type) {
         case 'checkout.session.completed':
-          await handleCheckoutCompleted(event.data.object);
+          await handleCheckoutCompleted(event.data.object, stripe);
           break;
         case 'invoice.paid':
           await handleInvoicePaid(event.data.object);
@@ -61,7 +63,7 @@ router.post(
 
 // --- Handlers ---
 
-async function handleCheckoutCompleted(session) {
+async function handleCheckoutCompleted(session, stripe) {
   const orgId = session.metadata?.organization_id;
   const planId = session.metadata?.plan_id;
   const customerId = session.customer;

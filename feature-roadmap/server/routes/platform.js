@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authenticate, requireSuperAdmin } = require('../middleware/auth');
+const { getStripeForRequest, getMode, clearModeCache, testKeySet, liveKeySet } = require('../lib/stripe');
 
 const sgMail = require('@sendgrid/mail');
 if (process.env.SENDGRID_API_KEY) {
@@ -343,7 +344,7 @@ router.get('/plans', async (req, res) => {
 
 // POST /api/platform/plans — create plan + Stripe product/prices
 router.post('/plans', async (req, res) => {
-  const stripe = require('../lib/stripe');
+  const stripe = await getStripeForRequest();
   try {
     const { name, slug, description, price_monthly, price_yearly, features, sort_order } = req.body;
 
@@ -405,7 +406,7 @@ router.post('/plans', async (req, res) => {
 
 // PATCH /api/platform/plans/:id — update plan + Stripe sync
 router.patch('/plans/:id', async (req, res) => {
-  const stripe = require('../lib/stripe');
+  const stripe = await getStripeForRequest();
   try {
     const { id } = req.params;
     const { name, description, price_monthly, price_yearly, features, is_active, sort_order } = req.body;
@@ -505,7 +506,7 @@ router.patch('/plans/:id', async (req, res) => {
 
 // DELETE /api/platform/plans/:id — soft-deactivate plan
 router.delete('/plans/:id', async (req, res) => {
-  const stripe = require('../lib/stripe');
+  const stripe = await getStripeForRequest();
   try {
     const { id } = req.params;
 
@@ -525,6 +526,44 @@ router.delete('/plans/:id', async (req, res) => {
   } catch (error) {
     console.error('Platform plan delete error:', error);
     res.status(500).json({ error: 'Failed to deactivate plan' });
+  }
+});
+
+// ========================================
+// STRIPE MODE
+// ========================================
+
+// GET /api/platform/stripe-mode
+router.get('/stripe-mode', async (req, res) => {
+  try {
+    const mode = await getMode();
+    res.json({ mode, testKeySet, liveKeySet });
+  } catch (error) {
+    console.error('Stripe mode fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch Stripe mode' });
+  }
+});
+
+// PUT /api/platform/stripe-mode
+router.put('/stripe-mode', async (req, res) => {
+  try {
+    const { mode } = req.body;
+    if (mode !== 'test' && mode !== 'live') {
+      return res.status(400).json({ error: 'Mode must be "test" or "live"' });
+    }
+
+    await db.query(
+      `INSERT INTO platform_settings (key, value, description)
+       VALUES ('stripe_mode', $1, 'Stripe API mode (test or live)')
+       ON CONFLICT (key) DO UPDATE SET value = $1`,
+      [mode]
+    );
+
+    clearModeCache();
+    res.json({ mode, testKeySet, liveKeySet });
+  } catch (error) {
+    console.error('Stripe mode update error:', error);
+    res.status(500).json({ error: 'Failed to update Stripe mode' });
   }
 });
 

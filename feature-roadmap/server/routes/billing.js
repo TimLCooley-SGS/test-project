@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db');
-const stripe = require('../lib/stripe');
+const { getStripeForRequest } = require('../lib/stripe');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -68,6 +68,7 @@ router.get('/subscription', async (req, res) => {
 
 // POST /api/billing/checkout — create Stripe Checkout Session
 router.post('/checkout', async (req, res) => {
+  const stripe = await getStripeForRequest();
   if (!stripe) {
     return res.status(503).json({ error: 'Stripe not configured' });
   }
@@ -126,6 +127,7 @@ router.post('/checkout', async (req, res) => {
 
 // POST /api/billing/portal — create Stripe Customer Portal session
 router.post('/portal', async (req, res) => {
+  const stripe = await getStripeForRequest();
   if (!stripe) {
     return res.status(503).json({ error: 'Stripe not configured' });
   }

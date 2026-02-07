@@ -33,6 +33,12 @@ interface Payment {
   created_at: string;
 }
 
+interface StripeMode {
+  mode: 'test' | 'live';
+  testKeySet: boolean;
+  liveKeySet: boolean;
+}
+
 type Tab = 'plans' | 'payments';
 
 const emptyForm = {
@@ -54,6 +60,8 @@ function PlansAndBilling(): React.ReactElement {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [stripeMode, setStripeMode] = useState<StripeMode | null>(null);
+  const [switchingMode, setSwitchingMode] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -61,16 +69,42 @@ function PlansAndBilling(): React.ReactElement {
 
   const loadData = async () => {
     try {
-      const [plansData, paymentsData] = await Promise.all([
+      const [plansData, paymentsData, modeData] = await Promise.all([
         api.fetchPlatformPlans(),
         api.fetchPlatformPayments(),
+        api.fetchStripeMode(),
       ]);
       setPlans(plansData);
       setPayments(paymentsData);
+      setStripeMode(modeData);
     } catch (err) {
       console.error('Failed to load plans/payments:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleModeSwitch = async (newMode: 'test' | 'live') => {
+    if (!stripeMode || newMode === stripeMode.mode) return;
+
+    if (newMode === 'live') {
+      if (!stripeMode.liveKeySet) {
+        alert('Live Stripe key is not configured. Set STRIPE_LIVE_SECRET_KEY in your environment.');
+        return;
+      }
+      if (!window.confirm(
+        'Switch to LIVE mode? This will use real Stripe keys and process real payments. Are you sure?'
+      )) return;
+    }
+
+    setSwitchingMode(true);
+    try {
+      const updated = await api.updateStripeMode(newMode);
+      setStripeMode(updated);
+    } catch (err: any) {
+      alert(err.message || 'Failed to switch Stripe mode');
+    } finally {
+      setSwitchingMode(false);
     }
   };
 
@@ -184,9 +218,37 @@ function PlansAndBilling(): React.ReactElement {
 
       {tab === 'plans' && (
         <>
-          <button className="add-plan-btn" onClick={openCreateForm}>
-            + Create Plan
-          </button>
+          <div className="plans-toolbar">
+            <button className="add-plan-btn" onClick={openCreateForm}>
+              + Create Plan
+            </button>
+            {stripeMode && (
+              <div className="stripe-mode-toggle">
+                <div className="stripe-mode-pills">
+                  <button
+                    className={`stripe-mode-pill test ${stripeMode.mode === 'test' ? 'active' : ''}`}
+                    onClick={() => handleModeSwitch('test')}
+                    disabled={switchingMode}
+                  >
+                    Test
+                  </button>
+                  <button
+                    className={`stripe-mode-pill live ${stripeMode.mode === 'live' ? 'active' : ''}`}
+                    onClick={() => handleModeSwitch('live')}
+                    disabled={switchingMode}
+                  >
+                    Live
+                  </button>
+                </div>
+                <div className="stripe-key-status">
+                  <span className={`key-dot ${stripeMode.testKeySet ? 'configured' : 'missing'}`} />
+                  <span className="key-label">Test</span>
+                  <span className={`key-dot ${stripeMode.liveKeySet ? 'configured' : 'missing'}`} />
+                  <span className="key-label">Live</span>
+                </div>
+              </div>
+            )}
+          </div>
 
           {showForm && (
             <div className="plan-form-card">
