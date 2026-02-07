@@ -21,6 +21,7 @@ import PlatformSettings from './pages/platform/Settings';
 import PlatformAnalytics from './pages/platform/Analytics';
 import PlansAndBilling from './pages/platform/PlansAndBilling';
 import Profile from './pages/Profile';
+import PublicBoard from './pages/PublicBoard';
 import ResetPassword from './pages/ResetPassword';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -34,11 +35,13 @@ function App(): React.ReactElement {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [boardSlug, setBoardSlug] = useState<string | null>(null);
   const location = useLocation();
 
-  // Check if we're on the embed or reset-password route
+  // Check if we're on the embed, reset-password, or board route
   const isEmbedRoute = location.pathname === '/embed';
   const isResetPasswordRoute = location.pathname === '/reset-password';
+  const isBoardRoute = location.pathname.startsWith('/board/');
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -72,6 +75,15 @@ function App(): React.ReactElement {
     }
   }, []);
 
+  // Fetch boardSlug from branding endpoint
+  useEffect(() => {
+    api.fetchPlatformBranding()
+      .then(branding => {
+        if (branding.boardSlug) setBoardSlug(branding.boardSlug);
+      })
+      .catch(() => {});
+  }, []);
+
   const handleLoginSuccess = (loggedInUser: User): void => {
     setUser(loggedInUser);
     setShowLogin(false);
@@ -80,6 +92,20 @@ function App(): React.ReactElement {
   const handleLogout = (): void => {
     api.logout();
     setUser(null);
+  };
+
+  const handleShowLogin = (): void => {
+    setAuthMode('login');
+    setShowLogin(true);
+  };
+
+  const handleShowSignup = (): void => {
+    setAuthMode('register');
+    setShowLogin(true);
+  };
+
+  const handleCloseLogin = (): void => {
+    setShowLogin(false);
   };
 
   // Render embed view without authentication or app shell
@@ -100,23 +126,23 @@ function App(): React.ReactElement {
     );
   }
 
+  // Render public board pages without authentication
+  if (isBoardRoute) {
+    return (
+      <>
+        <PublicNavbar onLoginClick={handleShowLogin} onSignupClick={handleShowSignup} boardSlug={boardSlug} />
+        <Routes>
+          <Route path="/board/:slug" element={<PublicBoard />} />
+          <Route path="/board/:slug/roadmap" element={<PublicBoard />} />
+        </Routes>
+        {showLogin && <Login onLoginSuccess={handleLoginSuccess} onBack={handleCloseLogin} initialMode={authMode} />}
+      </>
+    );
+  }
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
-
-  const handleShowLogin = (): void => {
-    setAuthMode('login');
-    setShowLogin(true);
-  };
-
-  const handleShowSignup = (): void => {
-    setAuthMode('register');
-    setShowLogin(true);
-  };
-
-  const handleCloseLogin = (): void => {
-    setShowLogin(false);
-  };
 
   if (!user) {
     if (showLogin) {
@@ -125,10 +151,12 @@ function App(): React.ReactElement {
 
     return (
       <>
-        <PublicNavbar onLoginClick={handleShowLogin} onSignupClick={handleShowSignup} />
+        <PublicNavbar onLoginClick={handleShowLogin} onSignupClick={handleShowSignup} boardSlug={boardSlug} />
         <Routes>
           <Route path="/" element={<Landing onGetStarted={handleShowSignup} />} />
           <Route path="/pricing" element={<Pricing onGetStarted={handleShowSignup} />} />
+          <Route path="/board/:slug" element={<PublicBoard />} />
+          <Route path="/board/:slug/roadmap" element={<PublicBoard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </>

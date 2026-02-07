@@ -10,6 +10,7 @@ const suggestionsRoutes = require('./routes/suggestions');
 const categoriesRoutes = require('./routes/categories');
 const usersRoutes = require('./routes/users');
 const embedRoutes = require('./routes/embed');
+const boardRoutes = require('./routes/board');
 const platformRoutes = require('./routes/platform');
 const webhookRoutes = require('./routes/webhooks');
 const billingRoutes = require('./routes/billing');
@@ -23,8 +24,9 @@ app.set('trust proxy', 1);
 // Stripe webhook route MUST come before express.json() — needs raw body
 app.use('/api/webhooks', webhookRoutes);
 
-// Permissive CORS for public embed routes
+// Permissive CORS for public embed and board routes
 app.use('/api/embed', cors({ origin: true, credentials: false }));
+app.use('/api/board', cors({ origin: true, credentials: false }));
 
 // Middleware
 app.use(cors({
@@ -52,6 +54,7 @@ app.use('/api/suggestions', suggestionsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/embed', embedRoutes);
+app.use('/api/board', boardRoutes);
 app.use('/api/platform', platformRoutes);
 app.use('/api/billing', billingRoutes);
 

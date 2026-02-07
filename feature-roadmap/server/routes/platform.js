@@ -13,15 +13,24 @@ const router = express.Router();
 // Public branding endpoint (no auth required)
 router.get('/branding', async (req, res) => {
   try {
-    const result = await db.query(
-      `SELECT key, value FROM platform_settings WHERE key IN ('platform_logo', 'platform_favicon', 'platform_brand_name')`
-    );
+    const [settingsResult, slugResult] = await Promise.all([
+      db.query(
+        `SELECT key, value FROM platform_settings WHERE key IN ('platform_logo', 'platform_favicon', 'platform_brand_name')`
+      ),
+      db.query(
+        `SELECT o.slug FROM users u
+         JOIN organizations o ON u.organization_id = o.id
+         WHERE u.is_super_admin = true AND o.is_active = true
+         LIMIT 1`
+      ),
+    ]);
     const map = {};
-    result.rows.forEach(r => { map[r.key] = r.value; });
+    settingsResult.rows.forEach(r => { map[r.key] = r.value; });
     res.json({
       logo: map['platform_logo'] || null,
       favicon: map['platform_favicon'] || null,
       brandName: map['platform_brand_name'] || null,
+      boardSlug: slugResult.rows[0]?.slug || null,
     });
   } catch (error) {
     console.error('Platform branding error:', error);

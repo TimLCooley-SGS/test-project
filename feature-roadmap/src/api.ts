@@ -260,8 +260,26 @@ async function publicFetch(path: string, options: RequestInit = {}): Promise<any
 
 // --- Public Platform Branding ---
 
-export async function fetchPlatformBranding(): Promise<{ logo: string | null; favicon: string | null; brandName: string | null }> {
+export async function fetchPlatformBranding(): Promise<{ logo: string | null; favicon: string | null; brandName: string | null; boardSlug: string | null }> {
   return publicFetch('/platform/branding');
+}
+
+// --- Public Board API ---
+
+export async function fetchBoardSuggestions(slug: string, fingerprint?: string): Promise<any[]> {
+  const params = fingerprint ? `?fingerprint=${encodeURIComponent(fingerprint)}` : '';
+  return publicFetch(`/board/${slug}/suggestions${params}`);
+}
+
+export async function fetchBoardCategories(slug: string): Promise<Category[]> {
+  return publicFetch(`/board/${slug}/categories`);
+}
+
+export async function boardVote(slug: string, suggestionId: string, fingerprint: string): Promise<{ voted: boolean }> {
+  return publicFetch(`/board/${slug}/suggestions/${suggestionId}/vote`, {
+    method: 'POST',
+    body: JSON.stringify({ fingerprint }),
+  });
 }
 
 // --- Public Embed API ---

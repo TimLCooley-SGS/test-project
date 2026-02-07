@@ -7,9 +7,10 @@ import './PublicNavbar.css';
 interface PublicNavbarProps {
   onLoginClick: () => void;
   onSignupClick: () => void;
+  boardSlug?: string | null;
 }
 
-function PublicNavbar({ onLoginClick, onSignupClick }: PublicNavbarProps): React.ReactElement {
+function PublicNavbar({ onLoginClick, onSignupClick, boardSlug }: PublicNavbarProps): React.ReactElement {
   const { theme } = useTheme();
   const location = useLocation();
 
@@ -36,6 +37,22 @@ function PublicNavbar({ onLoginClick, onSignupClick }: PublicNavbarProps): React
           >
             Home
           </Link>
+          {boardSlug && (
+            <>
+              <Link
+                to={`/board/${boardSlug}`}
+                className={`public-nav-link ${location.pathname === `/board/${boardSlug}` ? 'active' : ''}`}
+              >
+                Suggestions
+              </Link>
+              <Link
+                to={`/board/${boardSlug}/roadmap`}
+                className={`public-nav-link ${location.pathname === `/board/${boardSlug}/roadmap` ? 'active' : ''}`}
+              >
+                Roadmap
+              </Link>
+            </>
+          )}
           <Link
             to="/pricing"
             className={`public-nav-link ${location.pathname === '/pricing' ? 'active' : ''}`}
